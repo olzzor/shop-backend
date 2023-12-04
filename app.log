@@ -197,3 +197,11 @@ This generated password is for development use only. Your security configuration
 2023-12-04T11:01:03.039+09:00  INFO 9264 --- [task-1] o.s.batch.core.job.SimpleStepHandler     : Executing step: [StatsSalesStep]
 2023-12-04T11:01:03.068+09:00  INFO 9264 --- [task-1] o.s.batch.core.step.AbstractStep         : Step: [StatsSalesStep] executed in 27ms
 2023-12-04T11:01:03.079+09:00  INFO 9264 --- [task-1] o.s.b.c.l.support.SimpleJobLauncher      : Job: [SimpleJob: [name=StatsSalesJob]] completed with the following parameters: [{'time':'{value=1701655262975, type=class java.lang.Long, identifying=true}'}] and the following status: [COMPLETED] in 46ms
+2023-12-04T14:24:48.307+09:00  INFO 9264 --- [SpringApplicationShutdownHook] org.quartz.core.QuartzScheduler          : Scheduler quartzScheduler_$_NON_CLUSTERED paused.
+2023-12-04T14:24:48.519+09:00  INFO 9264 --- [SpringApplicationShutdownHook] o.s.s.quartz.SchedulerFactoryBean        : Shutting down Quartz Scheduler
+2023-12-04T14:24:48.520+09:00  INFO 9264 --- [SpringApplicationShutdownHook] org.quartz.core.QuartzScheduler          : Scheduler quartzScheduler_$_NON_CLUSTERED shutting down.
+2023-12-04T14:24:48.523+09:00  INFO 9264 --- [SpringApplicationShutdownHook] org.quartz.core.QuartzScheduler          : Scheduler quartzScheduler_$_NON_CLUSTERED paused.
+2023-12-04T14:24:48.525+09:00  INFO 9264 --- [SpringApplicationShutdownHook] org.quartz.core.QuartzScheduler          : Scheduler quartzScheduler_$_NON_CLUSTERED shutdown complete.
+2023-12-04T14:24:48.574+09:00  INFO 9264 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2023-12-04T14:24:48.635+09:00  INFO 9264 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2023-12-04T14:24:48.659+09:00  INFO 9264 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
