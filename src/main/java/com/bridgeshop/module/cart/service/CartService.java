@@ -47,54 +47,6 @@ public class CartService {
         return cartProductDtoList;
     }
 
-//    @Transactional
-//    public String addCart(Long userId, Product product) {
-//        // 해당 상품이 판매중인 경우
-//        if (ProductStatus.ON_SALE.equals(product.getStatus())) {
-//
-//            // 사용자의 장바구니 가져오기 (또는 생성)
-//            Optional<Cart> cartOptional = cartRepository.findByUserId(userId);
-//            Cart cart;
-//
-//            if (cartOptional.isPresent()) {
-//                cart = cartOptional.get();
-//
-//            } else {
-//                cart = new Cart();
-//                cart.setUserId(userId);
-//                cart.setActivateFlag(true);
-//                cartRepository.save(cart);
-//            }
-//
-//            // 장바구니에 해당 상품이 이미 존재하는지 확인
-//            Optional<CartProduct> cartProductOptional = cartProductRepository.findByCartAndProduct(cart, product);
-//            CartProduct cartProduct;
-//
-//            if (cartProductOptional.isPresent()) {
-//                cartProduct = cartProductOptional.get();
-//                // TODO quantity!!!
-//                if (product.getQuantity() > cartProduct.getQuantity()) {
-//                    cartProduct.setQuantity(cartProduct.getQuantity() + 1);
-//                } else {
-//                    return "outOfStock";
-//                }
-//
-//            } else {
-//                cartProduct = new CartProduct();
-//                cartProduct.setCart(cart);
-//                cartProduct.setProduct(product);
-//                cartProduct.setQuantity(1);
-//            }
-//            cartProductRepository.save(cartProduct);
-//
-//            return "success";
-//
-//            // 해당 상품이 판매 완료된 경우
-//        } else {
-//            return "soldOut";
-//        }
-//    }
-
     @Transactional
     public void addFavoriteToCart(Long userId, Favorite favorite) {
         Product product = favorite.getProduct();
