@@ -25,22 +25,22 @@ public class OrderDetail extends BaseTimeEntity {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "order_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "order_id", referencedColumnName = "id")
     private Order order;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "product_id", referencedColumnName = "id")
     private Product product;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_size_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "product_size_id", referencedColumnName = "id")
     private ProductSize productSize;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "shipment_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "shipment_id", referencedColumnName = "id")
     private Shipment shipment;
 
     @ManyToOne

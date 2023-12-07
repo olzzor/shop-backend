@@ -24,11 +24,11 @@ public class Review extends BaseTimeEntity {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id")
     private User user;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "order_id", referencedColumnName = "id")
     private Order order;
 
     @Column(nullable = false)
@@ -40,7 +40,7 @@ public class Review extends BaseTimeEntity {
     @Column(nullable = false, length = 1000)
     private String content;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean activateFlag = true;
 
     @OneToMany(mappedBy = "review")

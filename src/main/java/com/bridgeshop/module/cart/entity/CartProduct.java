@@ -23,20 +23,20 @@ public class CartProduct {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "cart_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "cart_id", referencedColumnName = "id")
     private Cart cart;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "product_id", referencedColumnName = "id")
     private Product product;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_size_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "product_size_id", referencedColumnName = "id")
     private ProductSize productSize;
 
-    @Column
+    @Column(nullable = false)
     private int quantity;
 
     // 적용 쿠폰

@@ -19,12 +19,12 @@ public class RefreshToken extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 255, nullable = false)
-    private String token;
-
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(nullable = false, name = "user_id")
     private User user;
+
+    @Column(nullable = false, length = 255)
+    private String token;
 
     @Column(nullable = false)
     private LocalDateTime expDate;

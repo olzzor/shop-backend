@@ -23,7 +23,7 @@ public class Cart extends BaseTimeEntity {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id")
     private User user;
 
     @Column(nullable = false)

@@ -20,21 +20,20 @@ import java.util.List;
 public class Order extends BaseTimeEntity {
 
     @Id
-    @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
-    @Column(length = 50, nullable = false)
+    @Column(nullable = false, length = 50)
     private String orderNumber;
 
-    @Column(length = 50, nullable = false)
+    @Column(nullable = false, length = 50)
     private String buyerEmail;
 
-    @Column(length = 10, nullable = false)
+    @Column(nullable = false, length = 10)
     private String paymentMethod;
 
     @Column(nullable = false)
@@ -44,7 +43,7 @@ public class Order extends BaseTimeEntity {
     private String cardNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false, length = 20)
     private OrderStatus status;
 
     @Builder.Default

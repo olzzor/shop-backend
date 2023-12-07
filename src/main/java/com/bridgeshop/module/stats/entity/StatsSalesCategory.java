@@ -27,10 +27,8 @@ public class StatsSalesCategory {
     // 통계의 대상 카테고리
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "category_id", referencedColumnName = "id")
     private Category category;
-//    @Column(nullable = false)
-//    private int category;
 
     // 해당 카테고리의 총 판매 건수
     @Column(nullable = false)

@@ -27,6 +27,11 @@ public class Product extends BaseTimeEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JsonManagedReference
+    @JoinColumn(nullable = false, name = "category_id", referencedColumnName = "id")
+    private Category category;
+
     @Column(nullable = false, length = 50, unique = true)
     private String code;
 
@@ -36,11 +41,6 @@ public class Product extends BaseTimeEntity implements Serializable {
     @Column(length = 2000)
     private String detail;
 
-    @ManyToOne
-    @JsonManagedReference
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
-    private Category category;
-
     @Column(nullable = false)
     private int price;
 
@@ -48,7 +48,7 @@ public class Product extends BaseTimeEntity implements Serializable {
     private int discountPer;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false, length = 20)
     private ProductStatus status;
 
     @OneToMany(mappedBy = "product")

@@ -18,7 +18,7 @@ public class ProductImage extends BaseTimeEntity {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "product_id", referencedColumnName = "id")
     private Product product;
 
     @Column(nullable = false, length = 100)
@@ -27,6 +27,6 @@ public class ProductImage extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String fileName;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 10)
     private int displayOrder;
 }

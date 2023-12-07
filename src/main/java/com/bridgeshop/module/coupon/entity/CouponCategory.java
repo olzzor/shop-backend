@@ -18,11 +18,11 @@ public class CouponCategory {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "coupon_id")
+    @JoinColumn(nullable = false, name = "coupon_id")
     private Coupon coupon;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(nullable = false, name = "category_id")
     private Category category;
 }
 

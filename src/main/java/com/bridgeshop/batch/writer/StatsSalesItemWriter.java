@@ -51,7 +51,7 @@ public class StatsSalesItemWriter extends JdbcBatchItemWriter<StatsSales> {
     }
 
     private boolean isDataAlreadyPresent(LocalDate date) {
-        String sql = "SELECT COUNT(*) FROM stats_sales_category WHERE reference_date = ?";
+        String sql = "SELECT COUNT(*) FROM stats_sales WHERE reference_date = ?";
         int count = jdbcTemplate.queryForObject(sql, new Object[]{date}, Integer.class);
         return count > 0;
     }

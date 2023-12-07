@@ -25,7 +25,7 @@ public class ProductSize extends BaseTimeEntity {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "product_id", referencedColumnName = "id")
     private Product product;
 
     @Column(nullable = false, length = 50)

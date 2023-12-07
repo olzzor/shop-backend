@@ -108,9 +108,11 @@ public class UserService {
                 User.builder()
                         .name(userJoinRequest.getName())
                         .email(userJoinRequest.getEmail())
-                        .password(userJoinRequest.getPassword()) // 로컬 계정 생성시의 메소드 참조를 위해 추가
+                        .password(userJoinRequest.getPassword())
                         .authProvider(userJoinRequest.getAuthProvider())
-                        .socialId(userJoinRequest.getSocialId())
+                        .socialId(userJoinRequest.getSocialId()) // 현재 미사용중이나, 추후 가능성을 위해 작성
+                        .adminFlag(false)
+                        .activateFlag(true)
                         .build()
         );
 
@@ -188,7 +190,7 @@ public class UserService {
         }
     }
 
-    public Long createProfile(UserJoinRequest userJoinRequest) {
+    public Long createAccount(UserJoinRequest userJoinRequest) {
 
         String name = userJoinRequest.getName();
         String email = userJoinRequest.getEmail();

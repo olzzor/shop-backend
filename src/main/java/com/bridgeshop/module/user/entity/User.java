@@ -20,17 +20,16 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor // 매개변수가 없는 기본 생성자를 생성
+@AllArgsConstructor // 클래스의 모든 필드를 매개변수로 가지는 생성자를 생성
 @Table(name = "users")
 public class User extends BaseTimeEntity {
 
     @Id
-    @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 50, nullable = false)
+    @Column(nullable = false, length = 50)
     private String email;
 
     @Column(length = 100)
@@ -42,17 +41,17 @@ public class User extends BaseTimeEntity {
     @Column(length = 20)
     private String phoneNumber;
 
-    @Column(columnDefinition = "ENUM('GOOGLE', 'FACEBOOK', 'KAKAO', 'NAVER', 'LOCAL') DEFAULT 'LOCAL'")
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
     private AuthProvider authProvider;
 
     @Column(length = 100)
     private String socialId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean adminFlag = false;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "boolean default true")
     private boolean activateFlag = true;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)

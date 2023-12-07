@@ -22,15 +22,15 @@ public class RecentlyViewedProduct extends BaseTimeEntity {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "user_id")
+    @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_id")
+    @JoinColumn(nullable = false, name = "product_id")
     private Product product;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime viewedAt;
 }
 

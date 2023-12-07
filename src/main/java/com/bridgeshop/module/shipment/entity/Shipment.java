@@ -19,17 +19,16 @@ import java.util.List;
 public class Shipment extends BaseTimeEntity {
 
     @Id
-    @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false, length = 20)
     private String recipientName;
 
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false, length = 20)
     private String recipientPhone;
 
-    @Column(length = 500, nullable = false)
+    @Column(nullable = false, length = 500)
     private String shippingAddress;
 
     @Enumerated(EnumType.STRING)
@@ -40,8 +39,8 @@ public class Shipment extends BaseTimeEntity {
     private String trackingNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
-    private com.bridgeshop.module.shipment.entity.ShipmentStatus status;
+    @Column(nullable = false, length = 20)
+    private ShipmentStatus status;
 
     @Builder.Default
     @OneToMany(mappedBy = "shipment")

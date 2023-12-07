@@ -168,7 +168,7 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity signup(@RequestBody UserJoinRequest userJoinRequest) {
 
-        Long userId = userService.createProfile(userJoinRequest);
+        Long userId = userService.createAccount(userJoinRequest);
         cartService.createCart(userId);
 
         return new ResponseEntity<>(userId, HttpStatus.OK);

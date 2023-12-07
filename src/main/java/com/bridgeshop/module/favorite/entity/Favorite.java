@@ -24,16 +24,16 @@ public class Favorite extends BaseTimeEntity {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id")
     private User user;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "product_id", referencedColumnName = "id")
     private Product product;
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "product_size_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "product_size_id", referencedColumnName = "id")
     private ProductSize productSize;
 }

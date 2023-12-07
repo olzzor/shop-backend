@@ -20,8 +20,8 @@ public class RefreshTokenService {
         LocalDateTime expDate = LocalDateTime.now().plusDays(7);
 
         RefreshToken refreshToken = RefreshToken.builder()
-                .token(token)
                 .user(user)
+                .token(token)
                 .expDate(expDate)
                 .build();
 

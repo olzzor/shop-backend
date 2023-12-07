@@ -37,10 +37,10 @@ public class Notice extends BaseTimeEntity {
 //    private boolean isMainImage;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean isSliderImage;
+    private boolean isSliderImage = false;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean isModalImage;
+    private boolean isModalImage = false;
 
     @OneToMany(mappedBy = "notice")
     @JsonBackReference

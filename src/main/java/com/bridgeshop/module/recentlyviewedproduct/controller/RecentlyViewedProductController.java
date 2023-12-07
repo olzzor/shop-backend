@@ -34,10 +34,10 @@ public class RecentlyViewedProductController {
 
     /**
      * 유저의 상품 조회 기록을 처리하는 엔드포인트.
-     * <p>
-     * 유저가 상품을 조회할 때마다 이 엔드포인트가 호출되어 해당 행위를 기록합니다.
-     * 유효한 상품인지 확인하고, 유저의 최근 조회한 상품 기록을 특정 개수 (예: 10개)로 유지합니다.
-     * 필요에 따라 오래된 조회 기록은 삭제됩니다.
+     *
+     * 유저가 상품을 조회할 때마다 이 엔드포인트가 호출되어 해당 행위를 기록
+     * 유효한 상품인지 확인하고, 유저의 최근 조회한 상품 기록을 특정 개수 (예: 10개)로 유지
+     * 필요에 따라 오래된 조회 기록은 삭제
      */
     @PostMapping("/record/{productId}")
     public ResponseEntity recordView(@PathVariable("productId") Long productId,

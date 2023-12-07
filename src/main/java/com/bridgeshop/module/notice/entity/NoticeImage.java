@@ -16,14 +16,14 @@ public class NoticeImage extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JsonManagedReference
+    @JoinColumn(nullable = false, name = "notice_id", referencedColumnName = "id")
+    private Notice notice;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
     private NoticeImageType type;
-
-    @ManyToOne
-    @JsonManagedReference
-    @JoinColumn(name = "notice_id", referencedColumnName = "id")
-    private Notice notice;
 
     @Column(nullable = false, length = 100)
     private String filePath;

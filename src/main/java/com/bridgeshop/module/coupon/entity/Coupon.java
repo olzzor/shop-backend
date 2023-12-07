@@ -47,14 +47,14 @@ public class Coupon extends BaseTimeEntity {
     @Column(nullable = false)
     private int discountValue;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime startValidDate;
 
-    @Column
+    @Column(nullable = false)
     private LocalDateTime endValidDate;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(nullable = false)
     private CouponStatus status;
 
     @OneToMany(mappedBy = "coupon")

@@ -20,25 +20,25 @@ public class Address extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
-    @Column(length = 20)
+    @Column(nullable = false, length = 20)
     private String name;
 
-    @Column(length = 20)
+    @Column(nullable = false, length = 20)
     private String phoneNumber;
 
-    @Column(length = 20)
+    @Column(nullable = false, length = 20)
     private String zipCode;
 
-    @Column(length = 50)
+    @Column(nullable = false, length = 50)
     private String province;
 
-    @Column(length = 50)
+    @Column(nullable = false, length = 50)
     private String city;
 
-    @Column(length = 100)
+    @Column(nullable = false, length = 100)
     private String address1;
 
     @Column(length = 100)

@@ -18,7 +18,7 @@ public class ReviewImage extends BaseTimeEntity {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(name = "review_id", referencedColumnName = "id")
+    @JoinColumn(nullable = false, name = "review_id", referencedColumnName = "id")
     private Review review;
 
     @Column(nullable = false, length = 100)
@@ -27,6 +27,6 @@ public class ReviewImage extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String fileName;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     private int displayOrder;
 }

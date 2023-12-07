@@ -21,13 +21,13 @@ public class Contact extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id")
     private User user;
 
-    @Column(length = 50, nullable = false)
+    @Column(nullable = false, length = 50)
     private String inquirerName;
 
-    @Column(length = 50, nullable = false)
+    @Column(nullable = false, length = 50)
     private String inquirerEmail;
 
     @Column(length = 50)
@@ -37,19 +37,19 @@ public class Contact extends BaseTimeEntity {
     @Column(nullable = false, length = 50)
     private ContactType type;
 
-    @Column(length = 100, nullable = false)
+    @Column(nullable = false, length = 100)
     private String title;
 
-    @Column(length = 5000, nullable = false)
+    @Column(nullable = false, length = 5000)
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20, nullable = false)
+    @Column(nullable = false, length = 20)
     private ContactStatus status;
 
-    @Column
+    @Column(nullable = false)
     private Long ref;
 
-    @Column
+    @Column(nullable = false)
     private int step;
 }
