@@ -24,9 +24,9 @@ public class CookieUtils {
         return Optional.empty();
     }
 
-    public static void addCookie(HttpServletResponse response, String name, String value) {
+    public static void addCookie(HttpServletResponse response, String domain, String name, String value) {
         Cookie cookie = new Cookie(name, value);
-        cookie.setDomain("localhost.test"); // 모든 서브 도메인을 포함하도록 설정 (admin 페이지 접속시 일반 페이지에서 설정한 쿠키를 전송받기위헤 추가)
+        cookie.setDomain(domain); // 모든 서브 도메인을 포함하도록 설정 (admin 페이지 접속시 일반 페이지에서 설정한 쿠키를 전송받기위헤 추가)
         cookie.setPath("/");
         cookie.setHttpOnly(true); // JS를 통한 접근 방지
 //        cookie.setSecure(true); // HTTPS 사용 시 // TODO: 배포후 코멘트 아웃할 것
@@ -41,13 +41,14 @@ public class CookieUtils {
         response.addCookie(cookie);
     }
 
-    public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
+    public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String domain, String name) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null && cookies.length > 0) {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals(name)) {
-                    cookie.setValue("");
+                    cookie.setDomain(domain);
                     cookie.setPath("/");
+                    cookie.setValue("");
                     cookie.setMaxAge(0);
                     response.addCookie(cookie);
                 }

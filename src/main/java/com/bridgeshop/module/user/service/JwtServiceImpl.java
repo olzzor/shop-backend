@@ -6,6 +6,7 @@ import com.bridgeshop.common.util.CookieUtils;
 import io.jsonwebtoken.*;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,11 @@ import java.util.Map;
 public class JwtServiceImpl implements JwtService {
 
     private final RefreshTokenRepository refreshTokenRepository;
+
     private final String secretKey = "abbci2ioadij@@@ai17a662###8139!!!";
+
+    @Value("${app.cookie.domain}")
+    private String cookieDomain;
 
     @Override
     public String createAccessToken(Long userId) {
@@ -97,12 +102,13 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String getToken(String accessToken, String refreshToken, HttpServletResponse res) {
         if (getClaims(accessToken) != null) {
+            // 액세시 토큰 유효시, 해당 토큰 반환
             return accessToken;
 
         } else if (getClaims(refreshToken) != null) {
-            // 액세스 토큰 만료시, 토큰 재발급
+            // 액세스 토큰 만료시, 토큰 재발급 및 반환
             String token = reissueToken(refreshToken);
-            CookieUtils.addCookie(res, "token", token);
+            CookieUtils.addCookie(res, "token", token, cookieDomain);
 
             return token;
         } else {

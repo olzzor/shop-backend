@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,9 @@ public class UserController {
     private final CartService cartService;
     private final SendMailService sendMailService;
     private final RefreshTokenService refreshTokenService;
+
+    @Value("${app.cookie.domain}")
+    private String cookieDomain;
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUser(@PathVariable("id") Long id) {
@@ -73,8 +77,8 @@ public class UserController {
         refreshTokenService.deleteRefreshToken(id);
         refreshTokenService.addRefreshToken(rToken, userService.retrieveById(id));
 
-        CookieUtils.addCookie(res, "token", aToken);
-        CookieUtils.addCookie(res, "refresh_token", rToken);
+        CookieUtils.addCookie(res, cookieDomain, "token", aToken);
+        CookieUtils.addCookie(res, cookieDomain, "refresh_token", rToken);
 
         return new ResponseEntity<>(loginResponse, HttpStatus.OK);
 
@@ -97,8 +101,8 @@ public class UserController {
         refreshTokenService.deleteRefreshToken(id);
         refreshTokenService.addRefreshToken(rToken, userService.retrieveById(id));
 
-        CookieUtils.addCookie(res, "token", aToken);
-        CookieUtils.addCookie(res, "refresh_token", rToken);
+        CookieUtils.addCookie(res, cookieDomain, "token", aToken);
+        CookieUtils.addCookie(res, cookieDomain, "refresh_token", rToken);
 
         return ResponseEntity.ok(loginResponse);
     }
@@ -114,8 +118,8 @@ public class UserController {
 
             refreshTokenService.deleteRefreshToken(jwtService.getId(token));
 
-            CookieUtils.deleteCookie(req, res, "token");
-            CookieUtils.deleteCookie(req, res, "refresh_token");
+            CookieUtils.deleteCookie(req, res, cookieDomain, "token");
+            CookieUtils.deleteCookie(req, res, cookieDomain, "refresh_token");
 
             return new ResponseEntity<>(HttpStatus.OK);
 
@@ -254,7 +258,7 @@ public class UserController {
             userService.deleteUser(userId);
             cartService.deactivateCart(userId);
 
-            CookieUtils.deleteCookie(req, res, "token");
+            CookieUtils.deleteCookie(req, res, cookieDomain, "token");
 
             return new ResponseEntity<>(HttpStatus.OK);
 
