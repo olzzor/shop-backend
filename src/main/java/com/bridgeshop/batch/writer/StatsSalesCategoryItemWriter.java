@@ -46,7 +46,7 @@ public class StatsSalesCategoryItemWriter implements ItemWriter<StatsSalesCatego
             if (!isDataAlreadyPresent(referenceDate, category.getId())) {
                 // 현재 카테고리에 대한 매출 데이터가 있는지 검사
                 Optional<? extends StatsSalesCategory> statsOptional = items.getItems().stream()
-                        .filter(item -> Objects.equals(item.getCategory(), category))
+                        .filter(item -> item.getCategory().getId().equals(category.getId()))
                         .findFirst();
 
                 if (statsOptional.isPresent()) {

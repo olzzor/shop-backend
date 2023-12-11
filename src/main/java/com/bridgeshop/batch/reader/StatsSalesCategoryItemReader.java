@@ -19,7 +19,7 @@ import java.time.LocalDate;
 @Component
 public class StatsSalesCategoryItemReader extends JdbcCursorItemReader<StatsSalesCategory> {
     private boolean dataNoMore = false; // 더 이상 데이터가 없음을 표시하는 플래그
-    private boolean dataEmptyReturned = false; // 빈 데이터 반환 여부
+    private boolean dataRead = false; // 데이터 조회 유무
 
 
     public StatsSalesCategoryItemReader(DataSource dataSource) {
@@ -89,12 +89,13 @@ public class StatsSalesCategoryItemReader extends JdbcCursorItemReader<StatsSale
 
         if (stats != null) {
             // 조회 결과 데이터가 있는 경우
+            dataRead = true;
             return stats; // 해당 StatsSalesCategory 객체 반환
         } else {
             // 조회 결과 데이터가 없는 경우
-            if (!dataEmptyReturned) {
+            if (!dataRead) {
                 // 첫 조회에서 데이터가 없는 경우, 빈 StatsSalesCategory 객체 반환
-                dataEmptyReturned = true;
+                dataRead = true;
                 return new StatsSalesCategory();
             } else {
                 // 첫 조회 이후 결과 데이터가 없는 경우 null 반환. 더 이상 데이터가 없음을 표시 설정.
