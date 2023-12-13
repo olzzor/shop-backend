@@ -108,7 +108,7 @@ public class JwtServiceImpl implements JwtService {
         } else if (getClaims(refreshToken) != null) {
             // 액세스 토큰 만료시, 토큰 재발급 및 반환
             String token = reissueToken(refreshToken);
-            CookieUtils.addCookie(res, "token", token, cookieDomain);
+            CookieUtils.addCookie(res, cookieDomain, "token", token);
 
             return token;
         } else {
