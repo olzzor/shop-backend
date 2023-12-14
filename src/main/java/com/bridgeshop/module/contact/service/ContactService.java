@@ -45,19 +45,6 @@ public class ContactService {
         return contactMapper.mapToDtoList(contactList);
     }
 
-//    /** 문의 이력 취득 */
-//    public ContactUserResponse getContactUser(Long id) {
-//        User user = userRepository.findById(id)
-//                .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
-//        List<String> lstOrderNumber = orderRepository.findOrderNumberByUserId(id);
-//
-//        return ContactUserResponse.builder()
-//                .userName(user.getName())
-//                .userEmail(user.getEmail())
-//                .orderNumbers(lstOrderNumber)
-//                .build();
-//    }
-
     /**
      * 문의 이력 취득
      */
@@ -171,18 +158,22 @@ public class ContactService {
         // 작성자 정보 취득
         Optional<User> userOptional = userRepository.findById(userId);
 
-        // 문의 글 내용 작성
-        Contact contact = new Contact();
+        // 최대 ref 값 찾기, 데이터가 없을 경우 0을 반환
+        Long maxRef = contactRepository.findMaxRef();
+        maxRef = (maxRef != null) ? maxRef : 0L;
 
-        contact.setInquirerName(contactDto.getInquirerName().trim());
-        contact.setInquirerEmail(contactDto.getInquirerEmail().trim());
-        contact.setOrderNumber(contactDto.getOrderNumber().trim());
-        contact.setType(contactDto.getType());
-        contact.setTitle(contactDto.getTitle().trim());
-        contact.setContent(contactDto.getContent().trim());
-        contact.setStatus(ContactStatus.UNANSWERED);
-        contact.setRef(contactRepository.findMaxRef() + 1);
-        contact.setStep(0);
+        // 문의 글 내용 작성
+        Contact contact = Contact.builder()
+                .inquirerName(contactDto.getInquirerName().trim())
+                .inquirerEmail(contactDto.getInquirerEmail().trim())
+                .orderNumber(contactDto.getOrderNumber().trim())
+                .type(contactDto.getType())
+                .title(contactDto.getTitle().trim())
+                .content(contactDto.getContent().trim())
+                .status(ContactStatus.UNANSWERED)
+                .ref(maxRef + 1)
+                .step(0)
+                .build();
 
         if (userOptional.isPresent()) {
             contact.setUser(userOptional.get());
@@ -222,18 +213,17 @@ public class ContactService {
         originContact.setStatus(ContactStatus.ANSWERED);
 
         // 문의 글 답변 내용 작성
-        Contact contact = new Contact();
-
-        contact.setUser(user);
-        contact.setInquirerName(user.getName().trim());
-        contact.setInquirerEmail(user.getEmail().trim());
-        contact.setOrderNumber(originContact.getOrderNumber().trim());
-        contact.setType(originContact.getType());
-        contact.setTitle("RE : " + originContact.getTitle().trim());
-        contact.setContent(contactDto.getContent().trim());
-        contact.setStatus(ContactStatus.UNANSWERED);
-        contact.setRef(originContact.getRef());
-        contact.setStep(contactRepository.findMaxStepByRef(originContact.getRef()) + 1);
+        Contact contact = Contact.builder()
+                .inquirerName(user.getName().trim())
+                .inquirerEmail(user.getEmail().trim())
+                .orderNumber(originContact.getOrderNumber().trim())
+                .type(originContact.getType())
+                .title("RE : " + originContact.getTitle().trim())
+                .content(contactDto.getContent().trim())
+                .status(ContactStatus.UNANSWERED)
+                .ref(originContact.getRef())
+                .step(contactRepository.findMaxStepByRef(originContact.getRef()) + 1)
+                .build();
 
         // DB 등록
         contactRepository.save(contact);

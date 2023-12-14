@@ -1,24 +1,24 @@
 package com.bridgeshop.module.coupon.service;
 
-import com.bridgeshop.module.category.entity.Category;
+import com.bridgeshop.common.exception.NotFoundException;
+import com.bridgeshop.common.exception.ValidationException;
+import com.bridgeshop.common.util.DateUtils;
 import com.bridgeshop.module.category.dto.CategoryDto;
+import com.bridgeshop.module.category.entity.Category;
+import com.bridgeshop.module.category.mapper.CategoryMapper;
 import com.bridgeshop.module.coupon.dto.CouponDto;
 import com.bridgeshop.module.coupon.dto.CouponEligibilityRequest;
 import com.bridgeshop.module.coupon.dto.CouponListSearchRequest;
 import com.bridgeshop.module.coupon.dto.CouponUpdateRequest;
 import com.bridgeshop.module.coupon.entity.Coupon;
-import com.bridgeshop.common.exception.NotFoundException;
-import com.bridgeshop.common.exception.ValidationException;
-import com.bridgeshop.module.category.mapper.CategoryMapper;
 import com.bridgeshop.module.coupon.mapper.CouponMapper;
-import com.bridgeshop.module.product.entity.Product;
-import com.bridgeshop.module.product.dto.ProductDto;
-import com.bridgeshop.module.product.mapper.ProductMapper;
-import com.bridgeshop.module.user.entity.User;
-import com.bridgeshop.module.user.dto.UserDto;
-import com.bridgeshop.module.user.mapper.UserMapper;
 import com.bridgeshop.module.coupon.repository.CouponRepository;
-import com.bridgeshop.common.util.DateUtils;
+import com.bridgeshop.module.product.dto.ProductDto;
+import com.bridgeshop.module.product.entity.Product;
+import com.bridgeshop.module.product.mapper.ProductMapper;
+import com.bridgeshop.module.user.dto.UserDto;
+import com.bridgeshop.module.user.entity.User;
+import com.bridgeshop.module.user.mapper.UserMapper;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -159,10 +159,12 @@ public class CouponService {
         }
 
         // validDate 체크
-        if (StringUtils.isBlank(cuReq.getStartValidDate()) || StringUtils.isBlank(cuReq.getEndValidDate())) {
-            throw new ValidationException("validDateMissing", "유효기간을 입력해주세요.");
+        if (StringUtils.isBlank(cuReq.getStartValidDate())) {
+            throw new ValidationException("validDateMissing", "유효 기간의 시작 날짜를 입력해주세요.");
+        } else if (StringUtils.isBlank(cuReq.getEndValidDate())) {
+            throw new ValidationException("validDateMissing", "유효 기간의 종료 날짜를 입력해주세요.");
         } else if (LocalDate.parse(cuReq.getStartValidDate()).isAfter(LocalDate.parse(cuReq.getEndValidDate()))) {
-            throw new ValidationException("validDateInvalid", "종료 유효기간은 시작 유효기간보다 이후여야 합니다.");
+            throw new ValidationException("validDateInvalid", "유효 기간의 종료 날짜는 시작 날짜보다 이후여야 합니다.");
         }
 
         // status 체크
@@ -183,17 +185,18 @@ public class CouponService {
         LocalDateTime ldtEndValidDate = DateUtils.convertToLocalDateTime(strEndValidDate, formatter, true);
 
         // 2. Request 정보로 쿠폰 필드 업데이트
-        Coupon coupon = new Coupon();
-        coupon.setType(couponUpdateRequest.getType());
-        coupon.setCode(couponUpdateRequest.getCode());
-        coupon.setName(couponUpdateRequest.getName());
-        coupon.setDetail(couponUpdateRequest.getDetail());
-        coupon.setMinAmount(couponUpdateRequest.getMinAmount());
-        coupon.setDiscountType(couponUpdateRequest.getDiscountType());
-        coupon.setDiscountValue(couponUpdateRequest.getDiscountValue());
-        coupon.setStartValidDate(ldtStartValidDate);
-        coupon.setEndValidDate(ldtEndValidDate);
-        coupon.setStatus(couponUpdateRequest.getStatus());
+        Coupon coupon = Coupon.builder()
+                .type(couponUpdateRequest.getType())
+                .code(couponUpdateRequest.getCode())
+                .name(couponUpdateRequest.getName())
+                .detail(couponUpdateRequest.getDetail())
+                .minAmount(couponUpdateRequest.getMinAmount())
+                .discountType(couponUpdateRequest.getDiscountType())
+                .discountValue(couponUpdateRequest.getDiscountValue())
+                .startValidDate(ldtStartValidDate)
+                .endValidDate(ldtEndValidDate)
+                .status(couponUpdateRequest.getStatus())
+                .build();
 
         // Save the Coupon entity
         return couponRepository.save(coupon);

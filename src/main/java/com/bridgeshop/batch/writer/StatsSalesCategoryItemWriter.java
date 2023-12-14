@@ -1,8 +1,8 @@
 package com.bridgeshop.batch.writer;
 
-import com.bridgeshop.module.stats.entity.StatsSalesCategory;
 import com.bridgeshop.module.category.entity.Category;
 import com.bridgeshop.module.category.service.CategoryService;
+import com.bridgeshop.module.stats.entity.StatsSalesCategory;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +12,9 @@ import org.springframework.stereotype.Component;
 import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Component
-//    public class StatsSalesCategoryItemWriter extends JdbcBatchItemWriter<StatsSalesCategory> {
 public class StatsSalesCategoryItemWriter implements ItemWriter<StatsSalesCategory> {
 
     private final JdbcTemplate jdbcTemplate;
@@ -27,12 +25,6 @@ public class StatsSalesCategoryItemWriter implements ItemWriter<StatsSalesCatego
     @Autowired
     public StatsSalesCategoryItemWriter(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-//
-//        setDataSource(dataSource);
-//        // SQL 쿼리 설정
-//        setSql("INSERT INTO stats_sales_category (reference_date, category_id, sold_order_count, canceled_order_count, sold_amount, refund_amount) VALUES (:referenceDate, :category.id, :soldOrderCount, :canceledOrderCount, :soldAmount, :refundAmount)");
-//        // SqlParameterSourceProvider를 설정하여 StatsSales 객체의 필드를 SQL 파라미터와 매핑
-//        setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>());
     }
 
     @Override
@@ -78,22 +70,4 @@ public class StatsSalesCategoryItemWriter implements ItemWriter<StatsSalesCatego
         int count = jdbcTemplate.queryForObject(sql, new Object[]{date, categoryId}, Integer.class);
         return count > 0;
     }
-//    @Override
-//    public void write(Chunk<? extends StatsSalesCategory> items) throws Exception {
-//        // 단일 집계 객체 초기화
-//        StatsSalesCategory statsSalesCategory = new StatsSalesCategory();
-//
-//        for (StatsSalesCategory item : items) {
-//            // 주문 건수, 취소 건수, 판매 금액, 환불 금액 등을 집계
-//            statsSalesCategory.addSoldOrderCount(item.getSoldOrderCount());
-//            statsSalesCategory.addCanceledOrderCount(item.getCanceledOrderCount());
-//            statsSalesCategory.addSoldAmount(item.getSoldAmount());
-//            statsSalesCategory.addRefundAmount(item.getRefundAmount());
-//        }
-//
-//        // 집계된 단일 결과를 데이터베이스에 저장
-//        Chunk<StatsSales> chunk = new Chunk<>();
-//        chunk.add(statsSalesCategory);
-//        super.write(chunk);
-//    }
 }

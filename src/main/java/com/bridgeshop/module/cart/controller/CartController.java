@@ -6,6 +6,7 @@ import com.bridgeshop.module.cart.dto.CartProductUpdateRequest;
 import com.bridgeshop.module.cart.service.CartService;
 import com.bridgeshop.module.cart.entity.Cart;
 import com.bridgeshop.module.cart.service.CartProductService;
+import com.bridgeshop.module.favorite.dto.FavoriteInfo;
 import com.bridgeshop.module.favorite.entity.Favorite;
 import com.bridgeshop.module.favorite.service.FavoriteService;
 import com.bridgeshop.module.product.entity.ProductSize;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,35 +46,21 @@ public class CartController {
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            List<CartProductDto> cartProductDtoList = cartService.getProductsInCart(jwtService.getId(token));
+            Long userId = jwtService.getId(token);
+
+            List<CartProductDto> cartProductDtoList = cartService.getProductsInCart(userId).stream()
+                    .map(cp -> {
+                        FavoriteInfo favoriteInfo = favoriteService.checkFavorite(userId, cp.getProductSize().getId());
+                        cp.setFavoriteInfo(favoriteInfo);
+                        return cp;
+                    }).collect(Collectors.toList());
+
             return new ResponseEntity<>(cartProductDtoList, HttpStatus.OK);
 
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
-
-    /**
-     * 장바구니 상품 추가
-     */
-//    @PostMapping("/add/by-product-size/{productSizeId}")
-//    public ResponseEntity addToCart(@PathVariable("productSizeId") Long productSizeId,
-//                                    @CookieValue(value = "token", required = false) String accessToken,
-//                                    @CookieValue(value = "refresh_token", required = false) String refreshToken,
-//                                    HttpServletResponse res) {
-//
-//        String token = jwtService.getToken(accessToken, refreshToken, res);
-//
-//        if (token != null) {
-//            ProductSize productSize = productSizeService.retrieveById(productSizeId);
-//            cartService.addToCart(jwtService.getId(token), productSize);
-//
-//            return new ResponseEntity<>(HttpStatus.OK);
-//
-//        } else {
-//            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-//        }
-//    }
 
     /**
      * 장바구니 상품 추가

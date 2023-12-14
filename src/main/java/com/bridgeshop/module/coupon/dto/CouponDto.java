@@ -1,21 +1,21 @@
 package com.bridgeshop.module.coupon.dto;
 
+import com.bridgeshop.module.category.dto.CategoryDto;
 import com.bridgeshop.module.coupon.entity.CouponDiscountType;
 import com.bridgeshop.module.coupon.entity.CouponStatus;
 import com.bridgeshop.module.coupon.entity.CouponType;
-import com.bridgeshop.module.category.dto.CategoryDto;
 import com.bridgeshop.module.product.dto.ProductDto;
 import com.bridgeshop.module.user.dto.UserDto;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CouponDto {
     private Long id;
     private CouponType type;
@@ -31,5 +31,80 @@ public class CouponDto {
     private List<CategoryDto> categories;
     private List<ProductDto> products;
     private List<UserDto> users;
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public CouponDto(Long id, CouponType type, String code, String name, String detail,
+                     int minAmount, CouponDiscountType discountType, int discountValue,
+                     LocalDateTime startValidDate, LocalDateTime endValidDate, CouponStatus status) {
+        this.id = id;
+        this.type = type;
+        this.code = code;
+        this.name = name;
+        this.detail = detail;
+        this.minAmount = minAmount;
+        this.discountType = discountType;
+        this.discountValue = discountValue;
+        this.startValidDate = startValidDate;
+        this.endValidDate = endValidDate;
+        this.status = status;
+    }
+
+    // 설정자 메서드
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setType(CouponType type) {
+        this.type = type;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
+    }
+
+    public void setMinAmount(int minAmount) {
+        this.minAmount = minAmount;
+    }
+
+    public void setDiscountType(CouponDiscountType discountType) {
+        this.discountType = discountType;
+    }
+
+    public void setDiscountValue(int discountValue) {
+        this.discountValue = discountValue;
+    }
+
+    public void setStartValidDate(LocalDateTime startValidDate) {
+        this.startValidDate = startValidDate;
+    }
+
+    public void setEndValidDate(LocalDateTime endValidDate) {
+        this.endValidDate = endValidDate;
+    }
+
+    public void setStatus(CouponStatus status) {
+        this.status = status;
+    }
+
+    public void setCategories(List<CategoryDto> categories) {
+        this.categories = categories;
+    }
+
+    public void setProducts(List<ProductDto> products) {
+        this.products = products;
+    }
+
+    public void setUsers(List<UserDto> users) {
+        this.users = users;
+    }
 }
 

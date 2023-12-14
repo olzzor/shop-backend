@@ -72,13 +72,14 @@ public class ProductSizeService {
         List<ProductSize> productSizeList = new ArrayList<>();
 
         for (ProductSizeUpsertRequest productSizeUpsReq : productSizeUpsReqList) {
-            ProductSize productSize = new ProductSize();
 
-            productSize.setProduct(product); // 연관된 Product의 ID 설정
-            productSize.setSize(productSizeUpsReq.getSize()); // 사이즈 설정
-            productSize.setQuantity(productSizeUpsReq.getQuantity()); // 수량 설정
+            ProductSize productSize = ProductSize.builder()
+                    .product(product) // 연관된 Product의 ID 설정
+                    .size(productSizeUpsReq.getSize()) // 사이즈 설정
+                    .quantity(productSizeUpsReq.getQuantity()) // 수량 설정
+                    .build();
 
-            // 저장된 ProductSize 엔터티를 DB에 저장하고 반환된 결과를 리스트에 추가합니다.
+            // 저장된 ProductSize 엔터티를 DB에 저장하고 반환된 결과를 리스트에 추가
             productSizeList.add(productSizeRepository.save(productSize));
         }
 

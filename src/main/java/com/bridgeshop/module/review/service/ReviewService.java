@@ -7,6 +7,8 @@ import com.bridgeshop.module.order.entity.Order;
 import com.bridgeshop.module.order.service.OrderDetailService;
 import com.bridgeshop.module.order.service.OrderService;
 import com.bridgeshop.module.review.dto.*;
+import com.bridgeshop.module.review.entity.Review;
+import com.bridgeshop.module.review.entity.ReviewImage;
 import com.bridgeshop.module.review.mapper.ReviewMapper;
 import com.bridgeshop.module.review.repository.ReviewImageRepository;
 import com.bridgeshop.module.review.repository.ReviewRepository;
@@ -78,7 +80,8 @@ public class ReviewService {
                 .map(review -> {
                     ReviewDto reviewDto = reviewMapper.mapToDto(review); // Review를 ReviewDto로 변환
                     String userEmail = review.getUser() != null ? review.getUser().getEmail() : null; // Review 작성 User의 이메일을 가져옴
-                    return reviewDto.includeUserEmail(userEmail); // ReviewDto에 userEmail을 포함
+                    reviewDto.setUserEmail(userEmail); // ReviewDto에 userEmail을 설정
+                    return reviewDto;
                 })
                 .collect(Collectors.toList());
     }
@@ -94,8 +97,11 @@ public class ReviewService {
         // User를 UserDto로 변환
         UserDto userDto = userMapper.mapToDto(review.getUser());
 
-        // ReviewDto에 리뷰 이미지와 사용자 정보 포함
-        return reviewDto.includeReviewImages(reviewImageDtoList).includeUser(userDto);
+        // ReviewDto에 리뷰 이미지와 사용자 정보 설정
+        reviewDto.setReviewImages(reviewImageDtoList);
+        reviewDto.setUser(userDto);
+
+        return reviewDto;
     }
 
     public Page<Review> searchAllPaginated(ReviewListSearchRequest reviewListSearchRequest, Pageable pageable) {
@@ -198,14 +204,14 @@ public class ReviewService {
         User user = userService.retrieveById(userId);
         Order order = orderService.retrieveById(request.getOrderId());
 
-        Review review = new Review();
-
-        review.setUser(user);
-        review.setOrder(order);
-        review.setRating(request.getRating());
-        review.setTitle(request.getTitle());
-        review.setContent(request.getContent());
-        review.setActivateFlag(true);
+        Review review = Review.builder()
+                .user(user)
+                .order(order)
+                .rating(request.getRating())
+                .title(request.getTitle())
+                .content(request.getContent())
+                .activateFlag(true)
+                .build();
 
         reviewRepository.save(review);
 

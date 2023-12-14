@@ -7,15 +7,17 @@ import com.bridgeshop.module.order.entity.OrderDetail;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
+@Entity
 @Table(name = "product_sizes")
 public class ProductSize extends BaseTimeEntity {
 
@@ -46,4 +48,25 @@ public class ProductSize extends BaseTimeEntity {
     @OneToMany(mappedBy = "productSize")
     @JsonBackReference
     private List<OrderDetail> orderDetails = new ArrayList<>();
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public ProductSize(Product product, String size, int quantity) {
+        this.product = product;
+        this.size = size;
+        this.quantity = quantity;
+    }
+
+    // 설정자 메서드들
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

@@ -2,10 +2,8 @@ package com.bridgeshop.module.product.dto;
 
 import com.bridgeshop.module.product.entity.ProductStatus;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class ProductUpsertRequest {
     private Long id;
     private String categoryCode;

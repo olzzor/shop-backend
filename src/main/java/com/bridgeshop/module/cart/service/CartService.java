@@ -72,9 +72,11 @@ public class CartService {
                 User user = userRepository.findById(userId)
                         .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
 
-                cart = new Cart();
-                cart.setUser(user);
-                cart.setActivateFlag(true);
+                cart = Cart.builder()
+                        .user(user)
+                        .activateFlag(true)
+                        .build();
+
                 cartRepository.save(cart);
             }
 
@@ -90,11 +92,12 @@ public class CartService {
                 }
 
             } else {
-                cartProduct = new CartProduct();
-                cartProduct.setCart(cart);
-                cartProduct.setProduct(product);
-                cartProduct.setProductSize(productSize);
-                cartProduct.setQuantity(1);
+                cartProduct = CartProduct.builder()
+                        .cart(cart)
+                        .product(product)
+                        .productSize(productSize)
+                        .quantity(1)
+                        .build();
             }
 
             cartProductRepository.save(cartProduct);
@@ -125,9 +128,11 @@ public class CartService {
                 User user = userRepository.findById(userId)
                         .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
 
-                cart = new Cart();
-                cart.setUser(user);
-                cart.setActivateFlag(true);
+                cart = Cart.builder()
+                        .user(user)
+                        .activateFlag(true)
+                        .build();
+
                 cartRepository.save(cart);
             }
 
@@ -143,11 +148,12 @@ public class CartService {
                 }
 
             } else {
-                cartProduct = new CartProduct();
-                cartProduct.setCart(cart);
-                cartProduct.setProduct(product);
-                cartProduct.setProductSize(productSize);
-                cartProduct.setQuantity(quantity);
+                cartProduct = CartProduct.builder()
+                        .cart(cart)
+                        .product(product)
+                        .productSize(productSize)
+                        .quantity(quantity)
+                        .build();
             }
 
             cartProductRepository.save(cartProduct);
@@ -159,9 +165,11 @@ public class CartService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
 
-        Cart cart = new Cart();
-        cart.setUser(user);
-        cart.setActivateFlag(true);
+        Cart cart = Cart.builder()
+                .user(user)
+                .activateFlag(true)
+                .build();
+
         cartRepository.save(cart);
     }
 

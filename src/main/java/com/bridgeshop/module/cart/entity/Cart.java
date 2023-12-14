@@ -3,19 +3,17 @@ package com.bridgeshop.module.cart.entity;
 import com.bridgeshop.common.entity.BaseTimeEntity;
 import com.bridgeshop.module.user.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "carts")
 public class Cart extends BaseTimeEntity {
     @Id
@@ -27,8 +25,24 @@ public class Cart extends BaseTimeEntity {
     private User user;
 
     @Column(nullable = false)
-    private boolean activateFlag = true;
+    private boolean activateFlag;
 
     @OneToMany(mappedBy = "cart")
     private List<CartProduct> cartProducts = new ArrayList<>();
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public Cart(User user, Boolean activateFlag) {
+        this.user = user;
+        this.activateFlag = (activateFlag == null) ? true : activateFlag; // 기본값 설정
+    }
+
+    // 설정자 메서드들
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setActivateFlag(boolean activateFlag) {
+        this.activateFlag = activateFlag;
+    }
 }

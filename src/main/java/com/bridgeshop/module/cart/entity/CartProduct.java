@@ -5,15 +5,15 @@ import com.bridgeshop.module.product.entity.Product;
 import com.bridgeshop.module.product.entity.ProductSize;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /** Cart, Product 중간 엔티티 */
-@Entity
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 @Table(name = "cart_product")
 public class CartProduct {
 
@@ -39,10 +39,40 @@ public class CartProduct {
     @Column(nullable = false)
     private int quantity;
 
-    // 적용 쿠폰
     @ManyToOne
     @JsonManagedReference
     @JoinColumn(name = "coupon_id", referencedColumnName = "id")
-    private Coupon coupon;
+    private Coupon coupon; // 적용 쿠폰
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public CartProduct(Cart cart, Product product, ProductSize productSize, int quantity, Coupon coupon) {
+        this.cart = cart;
+        this.product = product;
+        this.productSize = productSize;
+        this.quantity = quantity;
+        this.coupon = coupon;
+    }
+
+    // 설정자 메서드들
+    public void setCart(Cart cart) {
+        this.cart = cart;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public void setProductSize(ProductSize productSize) {
+        this.productSize = productSize;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setCoupon(Coupon coupon) {
+        this.coupon = coupon;
+    }
 }
 

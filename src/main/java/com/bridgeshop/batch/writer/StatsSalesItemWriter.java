@@ -2,8 +2,7 @@ package com.bridgeshop.batch.writer;
 
 import com.bridgeshop.module.stats.entity.StatsSales;
 import org.springframework.batch.item.Chunk;
-import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
-import org.springframework.batch.item.database.JdbcBatchItemWriter;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -12,19 +11,13 @@ import javax.sql.DataSource;
 import java.time.LocalDate;
 
 @Component
-public class StatsSalesItemWriter extends JdbcBatchItemWriter<StatsSales> {
+public class StatsSalesItemWriter implements ItemWriter<StatsSales> {
 
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
     public StatsSalesItemWriter(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-
-        setDataSource(dataSource);
-        // SQL 쿼리 설정
-        setSql("INSERT INTO stats_sales (reference_date, sold_order_count, canceled_order_count, sold_amount, refund_amount) VALUES (:referenceDate, :soldOrderCount, :canceledOrderCount, :soldAmount, :refundAmount)");
-        // SqlParameterSourceProvider를 설정하여 StatsSales 객체의 필드를 SQL 파라미터와 매핑
-        setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>());
     }
 
     @Override
@@ -33,21 +26,26 @@ public class StatsSalesItemWriter extends JdbcBatchItemWriter<StatsSales> {
         LocalDate referenceDate = LocalDate.now().minusDays(1);
 
         if (!isDataAlreadyPresent(referenceDate)) {
-            StatsSales statsSales = new StatsSales(); // StatsSales 객체 초기화
-
-            for (StatsSales item : items) {
-                // 주문 건수, 취소 건수, 판매 금액, 환불 금액 등을 집계
-                statsSales.addSoldOrderCount(item.getSoldOrderCount());
-                statsSales.addCanceledOrderCount(item.getCanceledOrderCount());
-                statsSales.addSoldAmount(item.getSoldAmount());
-                statsSales.addRefundAmount(item.getRefundAmount());
+            if (!items.isEmpty()) {
+                // 매출 데이터가 있는 경우 저장
+                saveStatsSales(items.getItems().get(0));
+            } else {
+                // 매출 데이터가 없는 경우 새 객체 생성 및 저장
+                StatsSales noSalesData = StatsSales.builder()
+                        .referenceDate(LocalDate.now().minusDays(1))
+                        .soldOrderCount(0)
+                        .canceledOrderCount(0)
+                        .soldAmount(0)
+                        .refundAmount(0)
+                        .build();
+                saveStatsSales(noSalesData);
             }
-
-            // 집계된 단일 결과를 데이터베이스에 저장
-            Chunk<StatsSales> chunk = new Chunk<>();
-            chunk.add(statsSales);
-            super.write(chunk);
         }
+    }
+
+    private void saveStatsSales(StatsSales stats) {
+        String sql = "INSERT INTO stats_sales (reference_date, sold_order_count, canceled_order_count, sold_amount, refund_amount) VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, stats.getReferenceDate(), stats.getSoldOrderCount(), stats.getCanceledOrderCount(), stats.getSoldAmount(), stats.getRefundAmount());
     }
 
     private boolean isDataAlreadyPresent(LocalDate date) {

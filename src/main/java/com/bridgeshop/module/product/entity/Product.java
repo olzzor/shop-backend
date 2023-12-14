@@ -10,16 +10,18 @@ import com.bridgeshop.module.recentlyviewedproduct.entity.RecentlyViewedProduct;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
+@Entity
 @Table(name = "products")
 public class Product extends BaseTimeEntity implements Serializable {
 
@@ -79,7 +81,44 @@ public class Product extends BaseTimeEntity implements Serializable {
     @JsonBackReference
     private List<RecentlyViewedProduct> recentlyViewedProducts = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "product")
-//    @JsonBackReference
-//    private List<Review> reviews = new ArrayList<>();
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public Product(Category category, String code, String name, String detail, int price, int discountPer, ProductStatus status) {
+        this.category = category;
+        this.code = code;
+        this.name = name;
+        this.detail = detail;
+        this.price = price;
+        this.discountPer = discountPer;
+        this.status = status;
+    }
+
+    // 설정자 메서드들
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public void setDiscountPer(int discountPer) {
+        this.discountPer = discountPer;
+    }
+
+    public void setStatus(ProductStatus status) {
+        this.status = status;
+    }
 }

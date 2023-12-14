@@ -35,7 +35,7 @@ public class AddressController {
         }
 
         Optional<Address> addressOptional = addressService.getDefaultAddressByUserId(jwtService.getId(token));
-        AddressDto addressDto = addressOptional.map(addressService::convertToDto).orElse(new AddressDto());
+        AddressDto addressDto = addressOptional.map(addressService::convertToDto).orElse(AddressDto.builder().build());
 
         return new ResponseEntity<>(addressDto, HttpStatus.OK);
     }

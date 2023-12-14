@@ -38,10 +38,6 @@ public class RecentlyViewedProductService {
         return recentlyViewedProductRepository.findAllByUser_IdOrderByViewedAtDesc(userId, pageable);
     }
 
-//    public List<RecentlyViewedProduct> getRecentlyViewedProductList(Long userId) {
-//        return recentlyViewedProductRepository.findAllByUser_IdOrderByViewedAtDesc(userId);
-//    }
-
     public RecentlyViewedProductDto getRecentlyViewedProductDto(RecentlyViewedProduct recentlyViewedProduct) {
         RecentlyViewedProductDto recentlyViewedProductDto = recentlyViewedProductMapper.mapToDto(recentlyViewedProduct);
 
@@ -84,10 +80,12 @@ public class RecentlyViewedProductService {
             User user = userService.retrieveById(userId);
             Product product = productService.retrieveById(productId);
 
-            RecentlyViewedProduct rvp = new RecentlyViewedProduct();
-            rvp.setUser(user);
-            rvp.setProduct(product);
-            rvp.setViewedAt(viwedAt);
+            RecentlyViewedProduct rvp = RecentlyViewedProduct.builder()
+                    .user(user)
+                    .product(product)
+                    .viewedAt(viwedAt)
+                    .build();
+
             recentlyViewedProductRepository.save(rvp);
 
             // 해당 유저의 RecentView 데이터가 제한을 넘는다면, 가장 오래된 데이터 삭제

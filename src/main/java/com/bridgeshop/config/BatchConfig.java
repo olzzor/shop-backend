@@ -1,14 +1,13 @@
 package com.bridgeshop.config;
 
-import com.bridgeshop.module.stats.entity.StatsSales;
-import com.bridgeshop.module.stats.entity.StatsSalesCategory;
 import com.bridgeshop.batch.processor.StatsSalesCategoryItemProcessor;
 import com.bridgeshop.batch.processor.StatsSalesItemProcessor;
 import com.bridgeshop.batch.reader.StatsSalesCategoryItemReader;
 import com.bridgeshop.batch.reader.StatsSalesItemReader;
 import com.bridgeshop.batch.writer.StatsSalesCategoryItemWriter;
 import com.bridgeshop.batch.writer.StatsSalesItemWriter;
-import com.bridgeshop.module.order.entity.Order;
+import com.bridgeshop.module.stats.entity.StatsSales;
+import com.bridgeshop.module.stats.entity.StatsSalesCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -39,7 +38,7 @@ public class BatchConfig {
     @Bean
     public Step StatsSalesStep() {
         return new StepBuilder("StatsSalesStep", jobRepository)
-                .<Order, StatsSales>chunk(10)  // chunk 크기 설정
+                .<StatsSales, StatsSales>chunk(10)  // chunk 크기 설정
                 .reader(statsSalesItemReader)
                 .processor(statsSalesItemProcessor)
                 .writer(statsSalesItemWriter)

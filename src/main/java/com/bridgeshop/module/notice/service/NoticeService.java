@@ -95,11 +95,11 @@ public class NoticeService {
             NoticeImageType imageType = noticeImage.getType();
 
             if (imageType == NoticeImageType.MAIN) {
-                noticeDto.includeMainImage(noticeImageMapper.mapToDto(noticeImage));
+                noticeDto.setMainImage(noticeImageMapper.mapToDto(noticeImage));
             } else if (imageType == NoticeImageType.SLIDER) {
-                noticeDto.includeSliderImage(noticeImageMapper.mapToDto(noticeImage));
+                noticeDto.setSliderImage(noticeImageMapper.mapToDto(noticeImage));
             } else if (imageType == NoticeImageType.MODAL) {
-                noticeDto.includeModalImage(noticeImageMapper.mapToDto(noticeImage));
+                noticeDto.setModalImage(noticeImageMapper.mapToDto(noticeImage));
             }
         }
 
@@ -118,7 +118,7 @@ public class NoticeService {
             NoticeImageType imageType = noticeImage.getType();
 
             if (imageType == NoticeImageType.MAIN) {
-                noticeDto.includeMainImage(noticeImageMapper.mapToDto(noticeImage));
+                noticeDto.setMainImage(noticeImageMapper.mapToDto(noticeImage));
             }
         }
 
@@ -137,7 +137,7 @@ public class NoticeService {
             NoticeImageType imageType = noticeImage.getType();
 
             if (imageType == NoticeImageType.SLIDER) {
-                noticeDto.includeSliderImage(noticeImageMapper.mapToDto(noticeImage));
+                noticeDto.setSliderImage(noticeImageMapper.mapToDto(noticeImage));
             }
         }
 
@@ -156,7 +156,7 @@ public class NoticeService {
             NoticeImageType imageType = noticeImage.getType();
 
             if (imageType == NoticeImageType.MODAL) {
-                noticeDto.includeModalImage(noticeImageMapper.mapToDto(noticeImage));
+                noticeDto.setModalImage(noticeImageMapper.mapToDto(noticeImage));
             }
         }
 
@@ -193,14 +193,14 @@ public class NoticeService {
     @Transactional
     public Notice insertNotice(NoticeDto noticeDto, boolean isSliderImage, boolean isModalImage) {
 
-        Notice notice = new Notice();
-
-        notice.setType(noticeDto.getType());
-        notice.setTitle(noticeDto.getTitle());
-        notice.setContent(noticeDto.getContent());
-        notice.setStatus(noticeDto.getStatus());
-        notice.setSliderImage(isSliderImage);   // 추가
-        notice.setModalImage(isModalImage);     // 추가
+        Notice notice = Notice.builder()
+                .type(noticeDto.getType())
+                .title(noticeDto.getTitle())
+                .content(noticeDto.getContent())
+                .status(noticeDto.getStatus())
+                .isSliderImage(isSliderImage)   // 추가
+                .isModalImage(isModalImage)     // 추가
+                .build();
 
         noticeRepository.save(notice);
 

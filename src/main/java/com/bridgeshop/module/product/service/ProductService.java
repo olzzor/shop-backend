@@ -45,7 +45,6 @@ public class ProductService {
     private final ProductImageMapper productImageMapper;
     private final CategoryMapper categoryMapper;
 
-    private static final int MAX_CODE_LENGTH = 50;
     private static final int MAX_NAME_LENGTH = 100;
     private static final int MAX_DETAIL_LENGTH = 2000;
 
@@ -81,27 +80,8 @@ public class ProductService {
         return productRepository.findAllByStatusAndProductImages_DisplayOrder(ProductStatus.ON_SALE, 1, pageable);
     }
 
-//    public List<Product> getProductsOnSale() {
-//        List<Product> productList = productRepository.findAllByStatusAndProductFiles_DisplayOrder(ProductStatus.ON_SALE, 1);
-//
-//        // productList를 regDate 기준으로 내림차순 정렬
-//        List<Product> sortedProductList = productList.stream()
-//                .sorted(Comparator.comparing(Product::getRegDate).reversed())
-//                .collect(Collectors.toList());
-//
-//        return sortedProductList;
-//    }
-
     public Page<Product> searchOnSaleProducts(String query, Pageable pageable) {
         return productRepository.searchByKeywords(query, pageable);
-//        List<Product> productList = new ArrayList<>();
-//        String sanitizedQuery = query.replaceAll("\\s+", " ").trim();
-//
-//        for (String keyword : sanitizedQuery.split(" ")) {
-//            productList.addAll(productRepository.findAllByStatusAndNameContainingAndProductFiles_DisplayOrder(ProductStatus.ON_SALE, keyword, 1, pageable).getContent());
-//        }
-//
-//        return productList.stream().distinct().collect(Collectors.toList());
     }
 
     public Page<Product> getProductsOnSaleByCategory(String categoryCode, Pageable pageable) {
@@ -226,15 +206,15 @@ public class ProductService {
             String formattedDate = sdf.format(new Date()); // 현재 날짜와 시간을 위의 포맷으로 변환
             String productCode = category.getName() + "_" + userId + "_" + formattedDate;
 
-            Product product = new Product();
-
-            product.setCode(productCode);
-            product.setName(productUpsReq.getName());
-            product.setDetail(productUpsReq.getDetail());
-            product.setCategory(category);
-            product.setPrice(productUpsReq.getPrice());
-            product.setDiscountPer(productUpsReq.getDiscountPer());
-            product.setStatus(ProductStatus.ON_SALE);
+            Product product = Product.builder()
+                    .code(productCode)
+                    .name(productUpsReq.getName())
+                    .detail(productUpsReq.getDetail())
+                    .category(category)
+                    .price(productUpsReq.getPrice())
+                    .discountPer(productUpsReq.getDiscountPer())
+                    .status(ProductStatus.ON_SALE)
+                    .build();
 
             productRepository.save(product);
 

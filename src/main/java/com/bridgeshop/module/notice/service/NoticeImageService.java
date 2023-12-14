@@ -46,17 +46,6 @@ public class NoticeImageService {
         return noticeImageMapper.mapToDtoList(noticeImageList);
     }
 
-//    /**
-//     * 공지 이미지 파일 리스트 취득 (메인 표시 이미지만)
-//     */
-//    public List<NoticeImageFileDto> getNoticeImageFileDtoListForMain(List<NoticeImageFile> noticeImageFileList) {
-//
-//        return noticeImageFileList.stream()
-//                .filter(noticeImageFile -> noticeImageFile.getType() == NoticeImageType.MAIN)
-//                .map(this::getNoticeImageFileDto)
-//                .collect(Collectors.toList());
-//    }
-
     @Transactional
     public void updateNoticeImage(Long userId, Notice notice, NoticeImageType noticeImageType, MultipartFile file) {
         Optional<NoticeImage> noticeImageOptional = noticeImageRepository.findByTypeAndNotice_Id(noticeImageType, notice.getId());
@@ -81,12 +70,12 @@ public class NoticeImageService {
         // 저장할 파일 이름 생성
         String fileName = createFileName(noticeImageType, userId, extension);
 
-        NoticeImage noticeImage = new NoticeImage();
-
-        noticeImage.setType(noticeImageType);
-        noticeImage.setNotice(notice);
-        noticeImage.setFilePath("/img/upload/notices/");
-        noticeImage.setFileName(fileName);
+        NoticeImage noticeImage = NoticeImage.builder()
+                .type(noticeImageType)
+                .notice(notice)
+                .filePath("/img/upload/notices/")
+                .fileName(fileName)
+                .build();
 
         fileUploadService.uploadFile(file, fileName, "notices");
 

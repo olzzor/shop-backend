@@ -1,6 +1,6 @@
 package com.bridgeshop.module.favorite.service;
 
-import com.bridgeshop.module.favorite.dto.FavoriteCheckResponse;
+import com.bridgeshop.module.favorite.dto.FavoriteInfo;
 import com.bridgeshop.module.favorite.dto.FavoriteDto;
 import com.bridgeshop.module.favorite.entity.Favorite;
 import com.bridgeshop.module.favorite.mapper.FavoriteMapper;
@@ -41,28 +41,19 @@ public class FavoriteService {
                 .orElseThrow(() -> new NotFoundException("favoriteNotFound", "관심 상품 정보를 찾을 수 없습니다."));
     }
 
-    public FavoriteCheckResponse checkFavorite(Long userId, Long productSizeId) {
+    public FavoriteInfo checkFavorite(Long userId, Long productSizeId) {
         Optional<Favorite> favoriteOptional = favoriteRepository.findByUser_IdAndProductSize_Id(userId, productSizeId);
         if (favoriteOptional.isPresent()) {
-            return FavoriteCheckResponse.builder()
+            return FavoriteInfo.builder()
                     .id(favoriteOptional.get().getId())
                     .isFavorite(true)
                     .build();
         } else {
-            return FavoriteCheckResponse.builder()
+            return FavoriteInfo.builder()
                     .isFavorite(false)
                     .build();
         }
     }
-
-//    public List<FavoriteResponse> checkFavorites(Long userId, List<Long> productIds) {
-//        return productIds.stream()
-//                .map(productId -> {
-//                    boolean isFavorite = checkFavorite(userId, productId);
-//                    return new FavoriteResponse(productId, isFavorite);
-//                })
-//                .collect(Collectors.toList());
-//    }
 
     /**
      * 관심 상품 DTO 변환
@@ -115,10 +106,11 @@ public class FavoriteService {
                 throw new ExistsException("favoriteAlreadyExists", "관심상품이 이미 존재합니다.");
 
             } else {
-                Favorite favorite = new Favorite();
-                favorite.setUser(user);
-                favorite.setProduct(product);
-                favorite.setProductSize(productSize);
+                Favorite favorite = Favorite.builder()
+                        .user(user)
+                        .product(product)
+                        .productSize(productSize)
+                        .build();
 
                 favoriteRepository.save(favorite);
             }

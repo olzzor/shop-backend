@@ -1,6 +1,6 @@
 package com.bridgeshop.module.review.repository;
 
-import com.bridgeshop.module.review.dto.ReviewImage;
+import com.bridgeshop.module.review.entity.ReviewImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

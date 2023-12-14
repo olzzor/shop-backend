@@ -1,6 +1,6 @@
 package com.bridgeshop.module.review.mapper;
 
-import com.bridgeshop.module.review.dto.ReviewImage;
+import com.bridgeshop.module.review.entity.ReviewImage;
 import com.bridgeshop.module.review.dto.ReviewImageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

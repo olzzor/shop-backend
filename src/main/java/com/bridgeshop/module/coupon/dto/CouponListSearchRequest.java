@@ -1,14 +1,12 @@
 package com.bridgeshop.module.coupon.dto;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class CouponListSearchRequest {
     private String id;
     private String type;
@@ -22,4 +20,24 @@ public class CouponListSearchRequest {
     private String startEndValidDate;
     private String endEndValidDate;
     private String status;
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public CouponListSearchRequest(String id, String type, String code, String name,
+                                   String minAmount, String discountType, String discountValue,
+                                   String startStartValidDate, String endStartValidDate,
+                                   String startEndValidDate, String endEndValidDate, String status) {
+        this.id = id;
+        this.type = type;
+        this.code = code;
+        this.name = name;
+        this.minAmount = minAmount;
+        this.discountType = discountType;
+        this.discountValue = discountValue;
+        this.startStartValidDate = startStartValidDate;
+        this.endStartValidDate = endStartValidDate;
+        this.startEndValidDate = startEndValidDate;
+        this.endEndValidDate = endEndValidDate;
+        this.status = status;
+    }
 }

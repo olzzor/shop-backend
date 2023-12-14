@@ -2,16 +2,16 @@ package com.bridgeshop.module.user.entity;
 
 import com.bridgeshop.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 @Table(name = "refresh_token")
 public class RefreshToken extends BaseTimeEntity {
 
@@ -28,4 +28,25 @@ public class RefreshToken extends BaseTimeEntity {
 
     @Column(nullable = false)
     private LocalDateTime expDate;
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public RefreshToken(User user, String token, LocalDateTime expDate) {
+        this.user = user;
+        this.token = token;
+        this.expDate = expDate;
+    }
+
+    // 설정자 메서드들
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public void setExpDate(LocalDateTime expDate) {
+        this.expDate = expDate;
+    }
 }

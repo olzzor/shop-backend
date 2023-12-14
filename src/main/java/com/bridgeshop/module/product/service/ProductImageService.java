@@ -79,12 +79,12 @@ public class ProductImageService {
             String fileName = createFileName(productCategoryName, userId, extension);
 
             // ProductImage 설정
-            ProductImage productImage = new ProductImage();
-
-            productImage.setProduct(product);
-            productImage.setFilePath("/img/upload/products/");
-            productImage.setFileName(fileName);
-            productImage.setDisplayOrder(i + 1);
+            ProductImage productImage = ProductImage.builder()
+                    .product(product)
+                    .filePath("/img/upload/products/")
+                    .fileName(fileName)
+                    .displayOrder(i + 1)
+                    .build();
 
             productImageList.add(productImage);
 
@@ -117,12 +117,12 @@ public class ProductImageService {
                 // 저장할 파일 이름 생성
                 String fileName = createFileName(productCategoryName, userId, extension);
 
-                ProductImage productImage = new ProductImage();
-
-                productImage.setProduct(product);
-                productImage.setFilePath("/img/upload/products/");
-                productImage.setFileName(fileName);
-                productImage.setDisplayOrder(i + 1);
+                ProductImage productImage = ProductImage.builder()
+                        .product(product)
+                        .filePath("/img/upload/products/")
+                        .fileName(fileName)
+                        .displayOrder(i + 1)
+                        .build();
 
                 productImageList.add(productImage);
 

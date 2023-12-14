@@ -1,16 +1,22 @@
 package com.bridgeshop.module.cart.dto;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class AddToCartRequest {
     private Long productSizeId;
     private Long favoriteId;
     private int quantity;
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public AddToCartRequest(Long productSizeId, Long favoriteId, int quantity) {
+        this.productSizeId = productSizeId;
+        this.favoriteId = favoriteId;
+        this.quantity = quantity;
+    }
 }

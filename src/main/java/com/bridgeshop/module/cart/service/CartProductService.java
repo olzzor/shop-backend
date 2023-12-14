@@ -1,23 +1,24 @@
 package com.bridgeshop.module.cart.service;
 
+import com.bridgeshop.common.exception.NotFoundException;
 import com.bridgeshop.module.cart.dto.CartProductDto;
-import com.bridgeshop.module.cart.repository.CartProductRepository;
-import com.bridgeshop.module.cart.repository.CartRepository;
 import com.bridgeshop.module.cart.entity.CartProduct;
 import com.bridgeshop.module.cart.mapper.CartProductMapper;
+import com.bridgeshop.module.cart.repository.CartProductRepository;
+import com.bridgeshop.module.cart.repository.CartRepository;
 import com.bridgeshop.module.category.dto.CategoryDto;
+import com.bridgeshop.module.category.service.CategoryService;
 import com.bridgeshop.module.coupon.dto.CouponDto;
-import com.bridgeshop.module.coupon.service.CouponService;
 import com.bridgeshop.module.coupon.entity.Coupon;
-import com.bridgeshop.common.exception.NotFoundException;
 import com.bridgeshop.module.coupon.repository.CouponRepository;
+import com.bridgeshop.module.coupon.service.CouponService;
+import com.bridgeshop.module.favorite.repository.FavoriteRepository;
 import com.bridgeshop.module.product.dto.ProductDto;
 import com.bridgeshop.module.product.dto.ProductSizeDto;
 import com.bridgeshop.module.product.entity.Product;
 import com.bridgeshop.module.product.entity.ProductSize;
 import com.bridgeshop.module.product.mapper.ProductSizeMapper;
 import com.bridgeshop.module.product.service.ProductService;
-import com.bridgeshop.module.category.service.CategoryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class CartProductService {
     private final CategoryService categoryService;
     private final CartRepository cartRepository;
     private final CartProductRepository cartProductRepository;
+    private final FavoriteRepository favoriteRepository;
     private final CouponRepository couponRepository;
     private final CartProductMapper cartProductMapper;
     private final ProductSizeMapper productSizeMapper;

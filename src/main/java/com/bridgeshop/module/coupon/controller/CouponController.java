@@ -111,9 +111,10 @@ public class CouponController {
                 List<Coupon> couponList = couponService.getCouponListAvailable(userId, request);
                 List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponList);
 
-                CouponListAvailableResponse response = new CouponListAvailableResponse();
-                response.setCartProductId(request.getCartProductId());
-                response.setCoupons(couponDtoList);
+                CouponListAvailableResponse response = CouponListAvailableResponse.builder()
+                        .cartProductId(request.getCartProductId())
+                        .coupons(couponDtoList)
+                        .build();
 
                 responseList.add(response);
             }
@@ -158,25 +159,23 @@ public class CouponController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-            couponService.checkInput(couponUpdateRequest);
-            Coupon coupon = couponService.insertCoupon(couponUpdateRequest);
-
-            List<Long> userIds = couponUpdateRequest.getUsers();
-            couponUserService.insertCouponUser(coupon, userIds);
-
-            List<Long> productIds = couponUpdateRequest.getProducts();
-            couponProductService.insertCouponProduct(coupon, productIds);
-
-            List<Long> categoryIds = couponUpdateRequest.getCategories();
-            couponCategoryService.insertCouponCategory(coupon, categoryIds);
-
-            return new ResponseEntity<>(HttpStatus.OK);
-
-        } else { // 토큰이 유효하지 않은 경우
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("인증되지 않았습니다. 다시 로그인해주세요.");
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        couponService.checkInput(couponUpdateRequest);
+        Coupon coupon = couponService.insertCoupon(couponUpdateRequest);
+
+        List<Long> userIds = couponUpdateRequest.getUsers();
+        couponUserService.insertCouponUser(coupon, userIds);
+
+        List<Long> productIds = couponUpdateRequest.getProducts();
+        couponProductService.insertCouponProduct(coupon, productIds);
+
+        List<String> categoryCodes = couponUpdateRequest.getCategories();
+        couponCategoryService.insertCouponCategory(coupon, categoryCodes);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/update/single")
@@ -187,25 +186,23 @@ public class CouponController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-            couponService.checkInput(couponUpdateRequest);
-            Coupon coupon = couponService.updateCoupon(couponUpdateRequest);
-
-            List<Long> userIds = couponUpdateRequest.getUsers();
-            couponUserService.updateCouponUser(coupon, userIds);
-
-            List<Long> productIds = couponUpdateRequest.getProducts();
-            couponProductService.updateCouponProduct(coupon, productIds);
-
-            List<Long> categoryIds = couponUpdateRequest.getCategories();
-            couponCategoryService.updateCouponCategory(coupon, categoryIds);
-
-            return new ResponseEntity<>(HttpStatus.OK);
-
-        } else { // 토큰이 유효하지 않은 경우
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("인증되지 않았습니다. 다시 로그인해주세요.");
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        couponService.checkInput(couponUpdateRequest);
+        Coupon coupon = couponService.updateCoupon(couponUpdateRequest);
+
+        List<Long> userIds = couponUpdateRequest.getUsers();
+        couponUserService.updateCouponUser(coupon, userIds);
+
+        List<Long> productIds = couponUpdateRequest.getProducts();
+        couponProductService.updateCouponProduct(coupon, productIds);
+
+        List<String> categoryCodes = couponUpdateRequest.getCategories();
+        couponCategoryService.updateCouponCategory(coupon, categoryCodes);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/update/multiple")

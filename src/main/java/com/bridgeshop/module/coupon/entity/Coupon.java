@@ -4,20 +4,18 @@ import com.bridgeshop.common.entity.BaseTimeEntity;
 import com.bridgeshop.module.order.entity.OrderDetail;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 @Table(name = "coupons")
 public class Coupon extends BaseTimeEntity {
     @Id
@@ -72,5 +70,63 @@ public class Coupon extends BaseTimeEntity {
     @OneToMany(mappedBy = "coupon")
     @JsonBackReference
     private List<OrderDetail> orderDetails = new ArrayList<>();
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public Coupon(CouponType type, String code, String name, String detail,
+                  int minAmount, CouponDiscountType discountType, int discountValue,
+                  LocalDateTime startValidDate, LocalDateTime endValidDate, CouponStatus status) {
+        this.type = type;
+        this.code = code;
+        this.name = name;
+        this.detail = detail;
+        this.minAmount = minAmount;
+        this.discountType = discountType;
+        this.discountValue = discountValue;
+        this.startValidDate = startValidDate;
+        this.endValidDate = endValidDate;
+        this.status = status;
+    }
+
+    // 설정자 메서드들
+    public void setType(CouponType type) {
+        this.type = type;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
+    }
+
+    public void setMinAmount(int minAmount) {
+        this.minAmount = minAmount;
+    }
+
+    public void setDiscountType(CouponDiscountType discountType) {
+        this.discountType = discountType;
+    }
+
+    public void setDiscountValue(int discountValue) {
+        this.discountValue = discountValue;
+    }
+
+    public void setStartValidDate(LocalDateTime startValidDate) {
+        this.startValidDate = startValidDate;
+    }
+
+    public void setEndValidDate(LocalDateTime endValidDate) {
+        this.endValidDate = endValidDate;
+    }
+
+    public void setStatus(CouponStatus status) {
+        this.status = status;
+    }
 }
 

@@ -111,8 +111,6 @@ public class UserService {
                         .password(userJoinRequest.getPassword())
                         .authProvider(userJoinRequest.getAuthProvider())
                         .socialId(userJoinRequest.getSocialId()) // 현재 미사용중이나, 추후 가능성을 위해 작성
-                        .adminFlag(false)
-                        .activateFlag(true)
                         .build()
         );
 

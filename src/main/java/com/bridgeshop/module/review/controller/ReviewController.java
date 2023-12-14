@@ -10,6 +10,8 @@ import com.bridgeshop.module.product.service.ProductImageService;
 import com.bridgeshop.module.product.service.ProductService;
 import com.bridgeshop.module.product.service.ProductSizeService;
 import com.bridgeshop.module.review.dto.*;
+import com.bridgeshop.module.review.entity.Review;
+import com.bridgeshop.module.review.entity.ReviewImage;
 import com.bridgeshop.module.review.service.ReviewImageService;
 import com.bridgeshop.module.review.service.ReviewService;
 import com.bridgeshop.module.user.service.JwtService;
@@ -288,9 +290,9 @@ public class ReviewController {
         String[] emailParts = userEmail.split("@");
         String obfuscatedEmail = emailParts[0].charAt(0) + emailParts[0].substring(1).replaceAll(".", "*") + "@" + emailParts[1];
 
-        ReviewDto reviewDto = reviewService.convertToDto(review)
-                .includeReviewImages(reviewImageDtoList)
-                .includeUserEmail(obfuscatedEmail);
+        ReviewDto reviewDto = reviewService.convertToDto(review);
+        reviewDto.setReviewImages(reviewImageDtoList);
+        reviewDto.setUserEmail(obfuscatedEmail);
 
         return reviewDto;
     }
@@ -315,10 +317,10 @@ public class ReviewController {
         String[] emailParts = userEmail.split("@");
         String obfuscatedEmail = emailParts[0].charAt(0) + emailParts[0].substring(1).replaceAll(".", "*") + "@" + emailParts[1];
 
-        ReviewDto reviewDto = reviewService.convertToDto(review)
-                .includeUserEmail(obfuscatedEmail)
-                .includeReviewImages(reviewImageDtoList)
-                .includeProductSizes(productSizeDtoList);
+        ReviewDto reviewDto = reviewService.convertToDto(review);
+        reviewDto.setUserEmail(obfuscatedEmail);
+        reviewDto.setReviewImages(reviewImageDtoList);
+        reviewDto.setProductSizes(productSizeDtoList);
 
         return reviewDto;
     }

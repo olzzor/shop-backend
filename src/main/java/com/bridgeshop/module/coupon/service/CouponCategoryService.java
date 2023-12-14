@@ -1,6 +1,8 @@
 package com.bridgeshop.module.coupon.service;
 
+import com.bridgeshop.common.exception.NotFoundException;
 import com.bridgeshop.module.category.entity.Category;
+import com.bridgeshop.module.category.repository.CategoryRepository;
 import com.bridgeshop.module.coupon.entity.Coupon;
 import com.bridgeshop.module.coupon.entity.CouponCategory;
 import com.bridgeshop.module.coupon.repository.CouponCategoryRepository;
@@ -15,26 +17,27 @@ import java.util.List;
 public class CouponCategoryService {
 
     private final CouponCategoryRepository couponCategoryRepository;
+    private final CategoryRepository categoryRepository;
 
     @Transactional
-    public void insertCouponCategory(Coupon coupon, List<Long> categoryIds) {
+    public void insertCouponCategory(Coupon coupon, List<String> categoryCodes) {
 
-        for (Long categoryId : categoryIds) {
-            CouponCategory couponCategory = new CouponCategory();
+        for (String categoryCode : categoryCodes) {
+            Category category = categoryRepository.findByCode(categoryCode)
+                    .orElseThrow(() -> new NotFoundException("categoryNotFound", "카테고리 정보를 찾을 수 없습니다."));
 
-            Category category = new Category();
-            category.setId(categoryId);
-
-            couponCategory.setCoupon(coupon);
-            couponCategory.setCategory(category);
+            CouponCategory couponCategory = CouponCategory.builder()
+                    .coupon(coupon)
+                    .category(category)
+                    .build();
 
             couponCategoryRepository.save(couponCategory);
         }
     }
 
     @Transactional
-    public void updateCouponCategory(Coupon coupon, List<Long> categoryIds) {
+    public void updateCouponCategory(Coupon coupon, List<String> categoryCodes) {
         couponCategoryRepository.deleteAllByCoupon(coupon);
-        this.insertCouponCategory(coupon, categoryIds);
+        this.insertCouponCategory(coupon, categoryCodes);
     }
 }

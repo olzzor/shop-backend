@@ -19,7 +19,7 @@ import com.bridgeshop.module.product.mapper.ProductSizeMapper;
 import com.bridgeshop.module.shipment.mapper.ShipmentMapper;
 import com.bridgeshop.module.user.entity.User;
 import com.bridgeshop.module.user.repository.UserRepository;
-import com.bridgeshop.module.review.dto.Review;
+import com.bridgeshop.module.review.entity.Review;
 import com.bridgeshop.module.review.mapper.ReviewMapper;
 import com.siot.IamportRestClient.response.Payment;
 import io.micrometer.common.util.StringUtils;
@@ -82,7 +82,7 @@ public class OrderService {
 
         Review review = order.getReview();
         if (review != null) {
-            orderDto.includeReview(reviewMapper.mapToDto(review));
+            orderDto.setReview(reviewMapper.mapToDto(review));
         }
 
         List<OrderDetailDto> orderDetailDtoList = order.getOrderDetails().stream()
@@ -96,9 +96,9 @@ public class OrderService {
                     // ProductDto의 productImages 리스트에 첫 번째 원소로 설정
                     productDto.setProductImages(Collections.singletonList(productImageDto));
 
-                    orderDetailDto.includeProduct(productDto);
-                    orderDetailDto.includeProductSize(productSizeMapper.mapToDto(orderDetail.getProductSize()));
-                    orderDetailDto.includeShipment(shipmentMapper.mapToDto(orderDetail.getShipment()));
+                    orderDetailDto.setProduct(productDto);
+                    orderDetailDto.setProductSize(productSizeMapper.mapToDto(orderDetail.getProductSize()));
+                    orderDetailDto.setShipment(shipmentMapper.mapToDto(orderDetail.getShipment()));
 
                     return orderDetailDto;
                 })

@@ -1,13 +1,13 @@
 package com.bridgeshop.module.stats.dto;
 
 import com.bridgeshop.module.category.entity.Category;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class StatsSalesCategoryResponse {
 //    private String type;
 //    private LocalDate startDate;
@@ -17,4 +17,14 @@ public class StatsSalesCategoryResponse {
     private int canceledOrderCount;
     private int soldAmount;
     private int refundAmount;
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public StatsSalesCategoryResponse(int soldOrderCount, int canceledOrderCount,
+                                      int soldAmount, int refundAmount) {
+        this.soldOrderCount = soldOrderCount;
+        this.canceledOrderCount = canceledOrderCount;
+        this.soldAmount = soldAmount;
+        this.refundAmount = refundAmount;
+    }
 }

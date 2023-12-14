@@ -1,8 +1,8 @@
 package com.bridgeshop.module.review.service;
 
 import com.bridgeshop.common.service.FileUploadService;
-import com.bridgeshop.module.review.dto.Review;
-import com.bridgeshop.module.review.dto.ReviewImage;
+import com.bridgeshop.module.review.entity.Review;
+import com.bridgeshop.module.review.entity.ReviewImage;
 import com.bridgeshop.module.review.dto.ReviewImageDto;
 import com.bridgeshop.module.review.mapper.ReviewImageMapper;
 import com.bridgeshop.module.review.repository.ReviewImageRepository;
@@ -27,7 +27,6 @@ public class ReviewImageService {
     private final FileUploadService fileUploadService;
     private final ReviewImageRepository reviewImageRepository;
     private final ReviewImageMapper reviewImageMapper;
-
 
     public List<ReviewImage> retrieveAllByReviewId(Long id) {
         return reviewImageRepository.findAllByReview_Id(id);
@@ -61,12 +60,12 @@ public class ReviewImageService {
             // 저장할 파일 이름 생성
             String fileName = createFileName(userId, extension);
 
-            ReviewImage reviewImage = new ReviewImage();
-
-            reviewImage.setReview(review);
-            reviewImage.setFilePath("/img/upload/reviews/");
-            reviewImage.setFileName(fileName);
-            reviewImage.setDisplayOrder(i + 1);
+            ReviewImage reviewImage = ReviewImage.builder()
+                    .review(review)
+                    .filePath("/img/upload/reviews/")
+                    .fileName(fileName)
+                    .displayOrder(i + 1)
+                    .build();
 
             reviewImageList.add(reviewImage);
 
@@ -100,12 +99,12 @@ public class ReviewImageService {
             // 저장할 파일 이름 생성
             String fileName = createFileName(userId, extension);
 
-            ReviewImage reviewImage = new ReviewImage();
-
-            reviewImage.setReview(review);
-            reviewImage.setFilePath("/img/upload/reviews/");
-            reviewImage.setFileName(fileName);
-            reviewImage.setDisplayOrder(imagesToAdd.get(i).getDisplayOrder());
+            ReviewImage reviewImage = ReviewImage.builder()
+                    .review(review)
+                    .filePath("/img/upload/reviews/")
+                    .fileName(fileName)
+                    .displayOrder(imagesToAdd.get(i).getDisplayOrder())
+                    .build();
 
             reviewImageList.add(reviewImage);
 

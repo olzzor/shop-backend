@@ -1,7 +1,7 @@
 package com.bridgeshop.module.favorite.controller;
 
 import com.bridgeshop.module.favorite.service.FavoriteService;
-import com.bridgeshop.module.favorite.dto.FavoriteCheckResponse;
+import com.bridgeshop.module.favorite.dto.FavoriteInfo;
 import com.bridgeshop.module.favorite.dto.FavoriteDto;
 import com.bridgeshop.module.favorite.entity.Favorite;
 import com.bridgeshop.module.product.entity.ProductSize;
@@ -42,7 +42,7 @@ public class FavoriteController {
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            FavoriteCheckResponse fcRes = favoriteService.checkFavorite(jwtService.getId(token), productSizeId);
+            FavoriteInfo fcRes = favoriteService.checkFavorite(jwtService.getId(token), productSizeId);
             return new ResponseEntity<>(fcRes, HttpStatus.OK);
 
         } else {

@@ -1,16 +1,22 @@
 package com.bridgeshop.module.coupon.dto;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 public class CouponEligibilityRequest {
     private Long cartProductId;
     private Long productId;
     private Long categoryId;
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public CouponEligibilityRequest(Long cartProductId, Long productId, Long categoryId) {
+        this.cartProductId = cartProductId;
+        this.productId = productId;
+        this.categoryId = categoryId;
+    }
 }

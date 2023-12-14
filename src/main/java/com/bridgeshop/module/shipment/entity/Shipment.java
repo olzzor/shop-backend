@@ -4,17 +4,17 @@ import com.bridgeshop.common.entity.BaseTimeEntity;
 import com.bridgeshop.module.order.entity.OrderDetail;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
 @Table(name = "shipments")
 public class Shipment extends BaseTimeEntity {
 
@@ -42,8 +42,45 @@ public class Shipment extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private ShipmentStatus status;
 
-    @Builder.Default
     @OneToMany(mappedBy = "shipment")
     @JsonBackReference
     private List<OrderDetail> orderDetails = new ArrayList<>();
+
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public Shipment(String recipientName, String recipientPhone, String shippingAddress,
+                    CourierCompany courierCompany, String trackingNumber, ShipmentStatus status) {
+        this.recipientName = recipientName;
+        this.recipientPhone = recipientPhone;
+        this.shippingAddress = shippingAddress;
+        this.courierCompany = courierCompany;
+        this.trackingNumber = trackingNumber;
+        this.status = status;
+        // 관계형 필드는 생성자에서 초기화하지 않음
+    }
+
+    // 설정자 메서드들
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
+    }
+
+    public void setRecipientPhone(String recipientPhone) {
+        this.recipientPhone = recipientPhone;
+    }
+
+    public void setShippingAddress(String shippingAddress) {
+        this.shippingAddress = shippingAddress;
+    }
+
+    public void setCourierCompany(CourierCompany courierCompany) {
+        this.courierCompany = courierCompany;
+    }
+
+    public void setTrackingNumber(String trackingNumber) {
+        this.trackingNumber = trackingNumber;
+    }
+
+    public void setStatus(ShipmentStatus status) {
+        this.status = status;
+    }
 }

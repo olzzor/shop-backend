@@ -8,20 +8,7 @@ import org.springframework.stereotype.Component;
 public class StatsSalesCategoryItemProcessor implements ItemProcessor<StatsSalesCategory, StatsSalesCategory> {
 
     @Override
-    public StatsSalesCategory process(StatsSalesCategory stats) throws Exception {
-//        if (!ObjectUtils.isEmpty(stats)) {
-//            return stats;
-//        }
-
+    public StatsSalesCategory process(StatsSalesCategory stats) {
         return stats;
-
-//        return StatsSalesCategory.builder()
-//                .referenceDate(LocalDate.now().minusDays(1))
-//                .soldOrderCount(0)
-//                .canceledOrderCount(0)
-//                .soldAmount(0)
-//                .refundAmount(0)
-//                .build();
-
     }
 }

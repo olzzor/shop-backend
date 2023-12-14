@@ -186,14 +186,15 @@ public class ShipmentService {
 
     @Transactional
     public Shipment insertShipment(Payment payment) {
-        Shipment shipment = new Shipment();
 
-        shipment.setRecipientName(payment.getBuyerName());
-        shipment.setRecipientPhone(payment.getBuyerTel());
-        shipment.setShippingAddress(payment.getBuyerAddr());
-        shipment.setCourierCompany(null);  // TODO: 추후 변경
-        shipment.setTrackingNumber("");
-        shipment.setStatus(ShipmentStatus.ACCEPTED);
+        Shipment shipment = Shipment.builder()
+                .recipientName(payment.getBuyerName())
+                .recipientPhone(payment.getBuyerTel())
+                .shippingAddress(payment.getBuyerAddr())
+                .courierCompany(null)  // TODO: 추후 변경
+                .trackingNumber("")
+                .status(ShipmentStatus.ACCEPTED)
+                .build();
 
         return shipmentRepository.save(shipment);
     }

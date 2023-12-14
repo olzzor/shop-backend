@@ -1,7 +1,7 @@
 package com.bridgeshop.module.review.repository;
 
-import com.bridgeshop.module.review.dto.QReview;
-import com.bridgeshop.module.review.dto.Review;
+import com.bridgeshop.module.review.entity.QReview;
+import com.bridgeshop.module.review.entity.Review;
 import com.bridgeshop.module.review.dto.ReviewListSearchRequest;
 import com.bridgeshop.module.user.entity.QUser;
 import com.bridgeshop.common.util.QueryDslUtils;

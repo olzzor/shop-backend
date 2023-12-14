@@ -102,17 +102,17 @@ public class OrderDetailService {
             productSizeService.decreaseProductSizeQuantity(productSize, quantity);
             productService.updateProductStatus(product);
 
-            OrderDetail orderDetail = new OrderDetail();
-
-            orderDetail.setOrder(order);
-            orderDetail.setProduct(product);
-            orderDetail.setProductSize(productSize);
-            orderDetail.setCoupon(coupon);
-            orderDetail.setQuantity(quantity);
-            orderDetail.setUnitPrice(product.getPrice());
-            orderDetail.setDiscountPer(product.getDiscountPer());
-            orderDetail.setFinalPrice(getFinalPrice(product, coupon));
-            orderDetail.setShipment(shipment);
+            OrderDetail orderDetail = OrderDetail.builder()
+                    .order(order)
+                    .product(product)
+                    .productSize(productSize)
+                    .coupon(coupon)
+                    .quantity(quantity)
+                    .unitPrice(product.getPrice())
+                    .discountPer(product.getDiscountPer())
+                    .finalPrice(getFinalPrice(product, coupon))
+                    .shipment(shipment)
+                    .build();
 
             orderDetailList.add(orderDetail);
         }

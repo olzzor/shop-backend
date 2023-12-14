@@ -1,4 +1,4 @@
-package com.bridgeshop.module.product.entity;
+package com.bridgeshop.module.review.entity;
 
 import com.bridgeshop.common.entity.BaseTimeEntity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-@Table(name = "product_images")
-public class ProductImage extends BaseTimeEntity {
+@Table(name = "review_images")
+public class ReviewImage extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +20,8 @@ public class ProductImage extends BaseTimeEntity {
 
     @ManyToOne
     @JsonManagedReference
-    @JoinColumn(nullable = false, name = "product_id", referencedColumnName = "id")
-    private Product product;
+    @JoinColumn(nullable = false, name = "review_id", referencedColumnName = "id")
+    private Review review;
 
     @Column(nullable = false, length = 100)
     private String filePath;
@@ -29,21 +29,21 @@ public class ProductImage extends BaseTimeEntity {
     @Column(nullable = false, length = 100)
     private String fileName;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false)
     private int displayOrder;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public ProductImage(Product product, String filePath, String fileName, int displayOrder) {
-        this.product = product;
+    public ReviewImage(Review review, String filePath, String fileName, int displayOrder) {
+        this.review = review;
         this.filePath = filePath;
         this.fileName = fileName;
         this.displayOrder = displayOrder;
     }
 
     // 설정자 메서드들
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setReview(Review review) {
+        this.review = review;
     }
 
     public void setFilePath(String filePath) {

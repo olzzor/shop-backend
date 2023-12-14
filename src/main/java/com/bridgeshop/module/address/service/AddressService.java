@@ -1,14 +1,14 @@
 package com.bridgeshop.module.address.service;
 
-import com.bridgeshop.module.address.entity.Address;
-import com.bridgeshop.module.address.dto.AddressDto;
-import com.bridgeshop.module.address.dto.AddressUpdateRequest;
-import com.bridgeshop.module.address.mapper.AddressMapper;
-import com.bridgeshop.module.address.repository.AddressRepository;
-import com.bridgeshop.module.user.entity.User;
 import com.bridgeshop.common.exception.NotFoundException;
 import com.bridgeshop.common.exception.UnauthorizedException;
 import com.bridgeshop.common.exception.ValidationException;
+import com.bridgeshop.module.address.dto.AddressDto;
+import com.bridgeshop.module.address.dto.AddressUpdateRequest;
+import com.bridgeshop.module.address.entity.Address;
+import com.bridgeshop.module.address.mapper.AddressMapper;
+import com.bridgeshop.module.address.repository.AddressRepository;
+import com.bridgeshop.module.user.entity.User;
 import com.bridgeshop.module.user.repository.UserRepository;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
@@ -84,18 +84,18 @@ public class AddressService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
 
-        Address address = new Address();
-
-        address.setUser(user);
-        address.setName(auReq.getName().trim());
-        address.setPhoneNumber(auReq.getPhoneNumber().trim());
-        address.setZipCode(auReq.getZipCode().trim());
-        address.setProvince(auReq.getProvince().trim());
-        address.setCity(auReq.getCity().trim());
-        address.setAddress1(auReq.getAddress1().trim());
-        address.setAddress2(auReq.getAddress2().trim());
-        address.setApartment(auReq.isApartment());
-        address.setDefault(auReq.isDefault());
+        Address address = Address.builder()
+                .user(user)
+                .name(auReq.getName().trim())
+                .phoneNumber(auReq.getPhoneNumber().trim())
+                .zipCode(auReq.getZipCode().trim())
+                .province(auReq.getProvince().trim())
+                .city(auReq.getCity().trim())
+                .address1(auReq.getAddress1().trim())
+                .address2(auReq.getAddress2().trim())
+                .isApartment(auReq.isApartment())
+                .isDefault(auReq.isDefault())
+                .build();
 
         addressRepository.save(address);
     }
@@ -117,8 +117,8 @@ public class AddressService {
         address.setCity(auReq.getCity().trim());
         address.setAddress1(auReq.getAddress1().trim());
         address.setAddress2(auReq.getAddress2().trim());
-        address.setApartment(auReq.isApartment());
-        address.setDefault(auReq.isDefault());
+        address.setIsApartment(auReq.isApartment());
+        address.setIsDefault(auReq.isDefault());
 
         addressRepository.save(address);
     }
@@ -144,7 +144,7 @@ public class AddressService {
         if (addressOptional.isPresent()) {
             // 해당 주소를 기본 주소에서 해제
             Address defaultAddress = addressOptional.get();
-            defaultAddress.setDefault(false);
+            defaultAddress.setIsDefault(false);
         }
     }
 }

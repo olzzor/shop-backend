@@ -25,9 +25,10 @@ public class CategoryMapper {
     }
 
     public Category mapToEntity(CategoryDto categoryDto) {
-        Category category = new Category();
-        category.setCode(categoryDto.getCode());
-        category.setName(categoryDto.getName());
+        Category category = Category.builder()
+                .code(categoryDto.getCode())
+                .name(categoryDto.getName())
+                .build();
         return category;
     }
 

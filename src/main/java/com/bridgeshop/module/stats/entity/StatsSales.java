@@ -1,16 +1,16 @@
 package com.bridgeshop.module.stats.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Builder
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "stats_sales")
 public class StatsSales {
 
@@ -18,39 +18,50 @@ public class StatsSales {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 통계의 대상 날짜
     @Column(nullable = false, unique = true)
-    private LocalDate referenceDate = LocalDate.now().minusDays(1);
+    private LocalDate referenceDate; // 통계의 대상 날짜
 
-    // 해당 날짜의 총 판매 건수
     @Column(nullable = false)
-    private int soldOrderCount = 0;
+    private int soldOrderCount; // 해당 날짜의 총 판매 건수
 
-    // 해당 날짜의 총 취소 건수
     @Column(nullable = false)
-    private int canceledOrderCount = 0;
+    private int canceledOrderCount; // 해당 날짜의 총 취소 건수
 
-    // 해당 날짜의 총 판매 금액
     @Column(nullable = false)
-    private int soldAmount = 0;
+    private int soldAmount; // 해당 날짜의 총 판매 금액
 
-    // 해당 날짜의 총 환불 금액
     @Column(nullable = false)
-    private int refundAmount = 0;
+    private int refundAmount; // 해당 날짜의 총 환불 금액
 
-    public void addSoldOrderCount(int count) {
-        this.soldOrderCount += count;
+    // 빌더 패턴을 사용하는 생성자
+    @Builder
+    public StatsSales(LocalDate referenceDate, int soldOrderCount, int canceledOrderCount,
+                      int soldAmount, int refundAmount) {
+        this.referenceDate = referenceDate;
+        this.soldOrderCount = soldOrderCount;
+        this.canceledOrderCount = canceledOrderCount;
+        this.soldAmount = soldAmount;
+        this.refundAmount = refundAmount;
     }
 
-    public void addCanceledOrderCount(int count) {
-        this.canceledOrderCount += count;
+    // 설정자 메서드들
+    public void setReferenceDate(LocalDate referenceDate) {
+        this.referenceDate = referenceDate;
     }
 
-    public void addSoldAmount(int amount) {
-        this.soldAmount += amount;
+    public void setSoldOrderCount(int soldOrderCount) {
+        this.soldOrderCount = soldOrderCount;
     }
 
-    public void addRefundAmount(int amount) {
-        this.refundAmount += amount;
+    public void setCanceledOrderCount(int canceledOrderCount) {
+        this.canceledOrderCount = canceledOrderCount;
+    }
+
+    public void setSoldAmount(int soldAmount) {
+        this.soldAmount = soldAmount;
+    }
+
+    public void setRefundAmount(int refundAmount) {
+        this.refundAmount = refundAmount;
     }
 }
