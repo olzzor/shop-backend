@@ -23,21 +23,21 @@ public class ProductImage extends BaseTimeEntity {
     @JoinColumn(nullable = false, name = "product_id", referencedColumnName = "id")
     private Product product;
 
-    @Column(nullable = false, length = 100)
-    private String filePath;
+    @Column(nullable = false, length = 512)
+    private String fileUrl;
 
-    @Column(nullable = false, length = 100)
-    private String fileName;
+    @Column(nullable = false, length = 512)
+    private String fileKey;
 
     @Column(nullable = false, length = 10)
     private int displayOrder;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public ProductImage(Product product, String filePath, String fileName, int displayOrder) {
+    public ProductImage(Product product, String fileUrl, String fileKey, int displayOrder) {
         this.product = product;
-        this.filePath = filePath;
-        this.fileName = fileName;
+        this.fileUrl = fileUrl;
+        this.fileKey = fileKey;
         this.displayOrder = displayOrder;
     }
 
@@ -46,12 +46,12 @@ public class ProductImage extends BaseTimeEntity {
         this.product = product;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 
     public void setDisplayOrder(int displayOrder) {

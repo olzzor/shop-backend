@@ -23,21 +23,21 @@ public class ReviewImage extends BaseTimeEntity {
     @JoinColumn(nullable = false, name = "review_id", referencedColumnName = "id")
     private Review review;
 
-    @Column(nullable = false, length = 100)
-    private String filePath;
+    @Column(nullable = false, length = 512)
+    private String fileUrl;
 
-    @Column(nullable = false, length = 100)
-    private String fileName;
+    @Column(nullable = false, length = 512)
+    private String fileKey;
 
     @Column(nullable = false)
     private int displayOrder;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public ReviewImage(Review review, String filePath, String fileName, int displayOrder) {
+    public ReviewImage(Review review, String fileUrl, String fileKey, int displayOrder) {
         this.review = review;
-        this.filePath = filePath;
-        this.fileName = fileName;
+        this.fileUrl = fileUrl;
+        this.fileKey = fileKey;
         this.displayOrder = displayOrder;
     }
 
@@ -46,12 +46,12 @@ public class ReviewImage extends BaseTimeEntity {
         this.review = review;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 
     public void setDisplayOrder(int displayOrder) {

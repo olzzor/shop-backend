@@ -12,16 +12,16 @@ public class NoticeImageDto {
     private Long id;
     private NoticeImageType type;
     private NoticeDto notice;
-    private String filePath;
-    private String fileName;
+    private String fileUrl;
+    private String fileKey;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public NoticeImageDto(Long id, NoticeImageType type, String filePath, String fileName) {
+    public NoticeImageDto(Long id, NoticeImageType type, String fileUrl, String fileKey) {
         this.id = id;
         this.type = type;
-        this.filePath = filePath;
-        this.fileName = fileName;
+        this.fileUrl = fileUrl;
+        this.fileKey = fileKey;
     }
 
     // 설정자 메서드들
@@ -37,11 +37,11 @@ public class NoticeImageDto {
         this.notice = noticeDto;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 }

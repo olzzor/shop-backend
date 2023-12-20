@@ -1,16 +1,15 @@
 package com.bridgeshop.module.notice.service;
 
-import com.bridgeshop.module.notice.repository.NoticeImageRepository;
+import com.bridgeshop.common.service.S3UploadService;
 import com.bridgeshop.module.notice.dto.NoticeImageDto;
 import com.bridgeshop.module.notice.entity.Notice;
 import com.bridgeshop.module.notice.entity.NoticeImage;
 import com.bridgeshop.module.notice.entity.NoticeImageType;
 import com.bridgeshop.module.notice.mapper.NoticeImageMapper;
-import com.bridgeshop.common.service.FileUploadService;
+import com.bridgeshop.module.notice.repository.NoticeImageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,12 +24,9 @@ import java.util.TimeZone;
 @RequiredArgsConstructor
 public class NoticeImageService {
 
-    private final FileUploadService fileUploadService;
+    private final S3UploadService s3UploadService;
     private final NoticeImageRepository noticeImageRepository;
     private final NoticeImageMapper noticeImageMapper;
-
-    @Value("${upload.directory.notice}")
-    private String uploadDir;
 
     /**
      * 상품 파일 취득
@@ -47,39 +43,35 @@ public class NoticeImageService {
     }
 
     @Transactional
-    public void updateNoticeImage(Long userId, Notice notice, NoticeImageType noticeImageType, MultipartFile file) {
-        Optional<NoticeImage> noticeImageOptional = noticeImageRepository.findByTypeAndNotice_Id(noticeImageType, notice.getId());
-
-        // 변경 전 이미지가 존재하는 경우, 해당 이미지를 파일 서버, DB로부터 삭제
-        if (noticeImageOptional.isPresent()) {
-            NoticeImage noticeImage = noticeImageOptional.get();
-
-            fileUploadService.deleteFile(uploadDir + noticeImage.getFileName());
-            noticeImageRepository.delete(noticeImage);
-        }
-
-        // 변경 후 이미지를 저장
-        saveNoticeImage(userId, notice, noticeImageType, file);
-    }
-
-    @Transactional
     public void saveNoticeImage(Long userId, Notice notice, NoticeImageType noticeImageType, MultipartFile file) {
 
-        // 원본 파일 이름에서 파일 확장자 추출
-        String extension = extractFileExtension(file.getOriginalFilename());
-        // 저장할 파일 이름 생성
-        String fileName = createFileName(noticeImageType, userId, extension);
+        String extension = extractFileExtension(file.getOriginalFilename()); // 원본 파일 이름에서 파일 확장자 추출
+        String fileName = createFileName(noticeImageType, userId, extension); // 저장할 파일 이름 생성
+        String fileKey = "notices/" + fileName; // S3에 저장될 파일의 키를 'notices/' 디렉토리와 생성된 파일 이름으로 결합
+        String s3Url = s3UploadService.saveFile(file, fileKey); // S3에 파일 업로드 및 URL 반환
 
         NoticeImage noticeImage = NoticeImage.builder()
                 .type(noticeImageType)
                 .notice(notice)
-                .filePath("/img/upload/notices/")
-                .fileName(fileName)
+                .fileUrl(s3Url)
+                .fileKey(fileKey)
                 .build();
 
-        fileUploadService.uploadFile(file, fileName, "notices");
+        noticeImageRepository.save(noticeImage); // 생성된 NoticeImage 를 DB에 저장
+    }
 
-        noticeImageRepository.save(noticeImage);
+    @Transactional
+    public void updateNoticeImage(Long userId, Notice notice, NoticeImageType noticeImageType, MultipartFile file) {
+        Optional<NoticeImage> noticeImageOptional = noticeImageRepository.findByTypeAndNotice_Id(noticeImageType, notice.getId());
+
+        // 기존 NoticeImage 가 존재하는 경우
+        if (noticeImageOptional.isPresent()) {
+            NoticeImage noticeImage = noticeImageOptional.get();
+            s3UploadService.deleteImage(noticeImage.getFileKey()); // S3에 업로드 된 변경 전 이미지 파일 삭제
+            noticeImageRepository.delete(noticeImage); // 변경 전 NoticeImage 를 DB에서 삭제
+        }
+
+        saveNoticeImage(userId, notice, noticeImageType, file); // S3에 파일 업로드 및 생성된 NoticeImage 를 DB에 저장
     }
 
     /**
@@ -87,18 +79,19 @@ public class NoticeImageService {
      */
     private String extractFileExtension(String originalFileName) {
         int lastDot = originalFileName.lastIndexOf('.');
-
         return (lastDot > 0) ? originalFileName.substring(lastDot) : "";
     }
 
     /**
      * 파일 이름 생성 메소드
+     * 공지 유형, 사용자 ID, 현재 날짜와 시간을 조합하여 파일 이름 생성
      */
     private String createFileName(NoticeImageType noticeImageType, Long userId, String extension) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS"); // 년월일시분초 밀리초 포맷
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS"); // 날짜 포맷 설정
         sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul")); // 시간대 설정
         String formattedDate = sdf.format(new Date()); // 현재 날짜와 시간을 위의 포맷으로 변환
 
-        return "notice_" + noticeImageType + "_" + userId + "_" + formattedDate + extension;
+        // 공지 유형, 사용자 ID, 현재 날짜와 시간, 파일 확장자를 결합하여 파일 이름 생성
+        return noticeImageType + "_" + userId + "_" + formattedDate + extension;
     }
 }

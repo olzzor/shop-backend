@@ -22,7 +22,7 @@ public class AddressDto {
     @Builder
     public AddressDto(Long id, UserDto user, String name, String phoneNumber,
                       String zipCode, String province, String city,
-                      String address1, String address2, Boolean isApartment, Boolean isDefault) {
+                      String address1, String address2, boolean isApartment, boolean isDefault) {
         this.id = id;
         this.user = user;
         this.name = name;

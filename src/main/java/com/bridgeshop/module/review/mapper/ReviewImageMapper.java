@@ -15,8 +15,8 @@ public class ReviewImageMapper {
     public ReviewImageDto mapToDto(ReviewImage reviewImage) {
         return ReviewImageDto.builder()
                 .id(reviewImage.getId())
-                .filePath(reviewImage.getFilePath())
-                .fileName(reviewImage.getFileName())
+                .fileUrl(reviewImage.getFileUrl())
+                .fileKey(reviewImage.getFileKey())
                 .displayOrder(reviewImage.getDisplayOrder())
                 .build();
     }

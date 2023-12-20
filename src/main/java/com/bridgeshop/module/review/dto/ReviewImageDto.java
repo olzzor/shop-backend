@@ -10,16 +10,16 @@ import lombok.NoArgsConstructor;
 public class ReviewImageDto {
     private Long id;
     private ReviewDto review;
-    private String filePath;
-    private String fileName;
+    private String fileUrl;
+    private String fileKey;
     private int displayOrder;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public ReviewImageDto(Long id, String filePath, String fileName, int displayOrder) {
+    public ReviewImageDto(Long id, String fileUrl, String fileKey, int displayOrder) {
         this.id = id;
-        this.filePath = filePath;
-        this.fileName = fileName;
+        this.fileUrl = fileUrl;
+        this.fileKey = fileKey;
         this.displayOrder = displayOrder;
     }
 
@@ -32,12 +32,12 @@ public class ReviewImageDto {
         this.review = reviewDto;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 
     public void setDisplayOrder(int displayOrder) {

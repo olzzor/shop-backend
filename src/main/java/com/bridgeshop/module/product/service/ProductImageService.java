@@ -1,6 +1,8 @@
 package com.bridgeshop.module.product.service;
 
 import com.bridgeshop.common.exception.NotFoundException;
+import com.bridgeshop.common.service.FileUploadService;
+import com.bridgeshop.common.service.S3UploadService;
 import com.bridgeshop.module.category.repository.CategoryRepository;
 import com.bridgeshop.module.product.dto.ProductImageDto;
 import com.bridgeshop.module.product.dto.ProductUpsertRequest;
@@ -8,7 +10,6 @@ import com.bridgeshop.module.product.entity.Product;
 import com.bridgeshop.module.product.entity.ProductImage;
 import com.bridgeshop.module.product.mapper.ProductImageMapper;
 import com.bridgeshop.module.product.repository.ProductImageRepository;
-import com.bridgeshop.common.service.FileUploadService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,15 +30,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductImageService {
 
-    private final FileUploadService fileUploadService;
+    private final S3UploadService s3UploadService;
 
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
 
     private final ProductImageMapper productImageMapper;
 
-    @Value("${upload.directory.product}")
-    private String uploadDir;
+    public List<ProductImage> retrieveByProductId(Long productId) {
+        return productImageRepository.findAllByProduct_Id(productId);
+    }
 
     /**
      * 상품 파일 DTO 변환
@@ -70,28 +72,24 @@ public class ProductImageService {
         String productCategoryName = product.getCategory().getName();
 
         for (int i = 0; i < files.size(); i++) {
-
             MultipartFile file = files.get(i);
 
-            // 원본 파일 이름에서 파일 확장자 추출
-            String extension = extractFileExtension(file.getOriginalFilename());
-            // 저장할 파일 이름 생성
-            String fileName = createFileName(productCategoryName, userId, extension);
+            String extension = extractFileExtension(file.getOriginalFilename()); // 원본 파일 이름에서 파일 확장자 추출
+            String fileName = createFileName(productCategoryName, userId, extension); // 상품 카테고리, 등록 관리자 ID, 현재 시간을 이용하여 고유한 파일 이름 생성
+            String fileKey = "products/" + fileName; // S3에 저장될 파일의 키를 'products/' 디렉토리와 생성된 파일 이름으로 결합
+            String s3Url = s3UploadService.saveFile(file, fileKey); // S3에 파일 업로드 및 URL 반환
 
-            // ProductImage 설정
+            // ProductImage 객체 생성 및 리스트에 추가
             ProductImage productImage = ProductImage.builder()
                     .product(product)
-                    .filePath("/img/upload/products/")
-                    .fileName(fileName)
+                    .fileUrl(s3Url)
+                    .fileKey(fileKey)
                     .displayOrder(i + 1)
                     .build();
 
             productImageList.add(productImage);
-
-            // 입력 데이터 File 서버에 업로드
-            fileUploadService.uploadFile(file, fileName, "products");
         }
-        productImageRepository.saveAll(productImageList);
+        productImageRepository.saveAll(productImageList); // 생성된 ProductImage 리스트를 DB에 저장
 
         return productImageList;
     }
@@ -112,32 +110,27 @@ public class ProductImageService {
 
                 MultipartFile file = files.get(i);
 
-                // 원본 파일 이름에서 파일 확장자 추출
-                String extension = extractFileExtension(file.getOriginalFilename());
-                // 저장할 파일 이름 생성
-                String fileName = createFileName(productCategoryName, userId, extension);
+                String extension = extractFileExtension(file.getOriginalFilename()); // 원본 파일 이름에서 파일 확장자 추출
+                String fileName = createFileName(productCategoryName, userId, extension); // 저장할 파일 이름 생성
+                String fileKey = "products/" + fileName; // S3에 저장될 파일의 키를 'products/' 디렉토리와 생성된 파일 이름으로 결합
+                String s3Url = s3UploadService.saveFile(file, fileKey); // S3에 파일 업로드 및 URL 반환
 
                 ProductImage productImage = ProductImage.builder()
                         .product(product)
-                        .filePath("/img/upload/products/")
-                        .fileName(fileName)
+                        .fileUrl(s3Url)
+                        .fileKey(fileKey)
                         .displayOrder(i + 1)
                         .build();
 
                 productImageList.add(productImage);
-
-                // 변경 후 이미지 업로드 (파일 시스템)
-                fileUploadService.uploadFile(file, fileName, "products"); // 입력 데이터 File 서버에 업로드
             }
 
-            // 변경 전 이미지 삭제 (파일 시스템)
             for (ProductImage productImage : product.getProductImages()) {
-                fileUploadService.deleteFile(uploadDir + productImage.getFileName());
+                s3UploadService.deleteImage(productImage.getFileKey()); // S3에 업로드 된 변경 전 이미지 파일 삭제
             }
 
-            // 변경 전 이미지 삭제 및 변경 후 이미지 삽입 (파일 DB)
-            productImageRepository.deleteAllByProduct_Id(product.getId());
-            productImageRepository.saveAll(productImageList);
+            productImageRepository.deleteAllByProduct_Id(product.getId()); // 변경 전 ProductImage 리스트를 DB에서 삭제
+            productImageRepository.saveAll(productImageList); // 변경 후 ProductImage 리스트를 DB에 저장
         }
     }
 
@@ -146,18 +139,19 @@ public class ProductImageService {
      */
     private String extractFileExtension(String originalFileName) {
         int lastDot = originalFileName.lastIndexOf('.');
-
         return (lastDot > 0) ? originalFileName.substring(lastDot) : "";
     }
 
     /**
      * 파일 이름 생성 메소드
+     * 상품 카테고리 이름, 사용자 ID, 현재 날짜와 시간을 조합하여 파일 이름 생성
      */
     private String createFileName(String productCategoryName, Long userId, String extension) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS"); // 년월일시분초 밀리초 포맷
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS"); // 날짜 포맷 설정
         sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul")); // 시간대 설정
         String formattedDate = sdf.format(new Date()); // 현재 날짜와 시간을 위의 포맷으로 변환
 
-        return "product_" + productCategoryName + "_" + userId + "_" + formattedDate + extension;
+        // 카테고리 이름, 사용자 ID, 현재 날짜와 시간, 파일 확장자를 결합하여 파일 이름 생성
+        return productCategoryName + "_" + userId + "_" + formattedDate + extension;
     }
 }

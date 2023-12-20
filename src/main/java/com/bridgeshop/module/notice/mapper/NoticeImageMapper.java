@@ -16,8 +16,8 @@ public class NoticeImageMapper {
         return NoticeImageDto.builder()
                 .id(noticeImage.getId())
                 .type(noticeImage.getType())
-                .filePath(noticeImage.getFilePath())
-                .fileName(noticeImage.getFileName())
+                .fileUrl(noticeImage.getFileUrl())
+                .fileKey(noticeImage.getFileKey())
                 .build();
     }
 

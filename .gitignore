@@ -45,3 +45,6 @@ src/main/generated/
 ### 로그 파일 ###
 app.log
 app.log.*.gz
+
+# 애플리케이션 구성 파일
+application.properties

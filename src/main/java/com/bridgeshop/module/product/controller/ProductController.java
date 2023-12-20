@@ -1,19 +1,21 @@
 package com.bridgeshop.module.product.controller;
 
-import com.bridgeshop.module.category.service.CategoryService;
-import com.bridgeshop.common.service.FileUploadService;
 import com.bridgeshop.common.exception.UnauthorizedException;
-import com.bridgeshop.module.favorite.entity.Favorite;
+import com.bridgeshop.common.service.FileUploadService;
+import com.bridgeshop.common.service.S3UploadService;
+import com.bridgeshop.common.util.JsonUtils;
+import com.bridgeshop.module.category.service.CategoryService;
 import com.bridgeshop.module.favorite.dto.FavoriteDto;
-import com.bridgeshop.module.favorite.service.FavoriteService;
+import com.bridgeshop.module.favorite.entity.Favorite;
 import com.bridgeshop.module.favorite.repository.FavoriteRepository;
+import com.bridgeshop.module.favorite.service.FavoriteService;
 import com.bridgeshop.module.product.dto.*;
-import com.bridgeshop.module.product.service.ProductService;
 import com.bridgeshop.module.product.entity.Product;
+import com.bridgeshop.module.product.entity.ProductImage;
 import com.bridgeshop.module.product.service.ProductImageService;
+import com.bridgeshop.module.product.service.ProductService;
 import com.bridgeshop.module.product.service.ProductSizeService;
 import com.bridgeshop.module.user.service.JwtService;
-import com.bridgeshop.common.util.JsonUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -45,6 +47,7 @@ public class ProductController {
     private final CategoryService categoryService;
     private final FavoriteService favoriteService;
     private final FileUploadService fileUploadService;
+    private final S3UploadService s3UploadService;
 
     private final FavoriteRepository favoriteRepository;
 
@@ -263,7 +266,8 @@ public class ProductController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to parse input data"));
 
 //            TypeReference<List<ProductSizeUpsertRequest>> typeRef = new TypeReference<List<ProductSizeUpsertRequest>>() {};
-        TypeReference<List<ProductSizeUpsertRequest>> typeRef = new TypeReference<>() {};
+        TypeReference<List<ProductSizeUpsertRequest>> typeRef = new TypeReference<>() {
+        };
         List<ProductSizeUpsertRequest> productSizeUpsertRequestList = JsonUtils.fromJson(sizesJson, typeRef);
 
         productService.checkInput(productUpsertRequest);
@@ -351,4 +355,28 @@ public class ProductController {
                     .body("Update failed due to server error.");
         }
     }
+
+//    @GetMapping("/download-images/{productId}")
+//    public ResponseEntity<?> downloadImages(@PathVariable Long productId,
+//                                            @CookieValue(value = "token", required = false) String accessToken,
+//                                            @CookieValue(value = "refresh_token", required = false) String refreshToken,
+//                                            HttpServletResponse res) {
+//
+//        String token = jwtService.getToken(accessToken, refreshToken, res);
+//
+//        if (token == null) {
+//            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
+//        }
+//
+//        // 해당 상품 ID에 대한 이미지 정보 조회
+//        List<ProductImage> productImageList = productImageService.retrieveByProductId(productId);
+//
+//        // 각 이미지에 대해 다운로드 URL 생성
+//        List<String> downloadUrls = productImageList.stream()
+//                .map(image -> s3UploadService.downloadImage(image.getFileKey()).getBody().getURL().toString())
+//                .collect(Collectors.toList());
+//
+//        // 생성된 다운로드 URL 목록을 클라이언트에 반환
+//        return ResponseEntity.ok(downloadUrls);
+//    }
 }

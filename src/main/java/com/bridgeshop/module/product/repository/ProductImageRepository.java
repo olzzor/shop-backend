@@ -6,8 +6,11 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
-//    public interface ProductFileRepository extends JpaRepository<ProductFile, ProductFileId> {
+    //    public interface ProductFileRepository extends JpaRepository<ProductFile, ProductFileId> {
+    List<ProductImage> findAllByProduct_Id(Long productId);
 
     @Modifying
     @Query("DELETE FROM ProductImage pf WHERE pf.product.id = :productId")

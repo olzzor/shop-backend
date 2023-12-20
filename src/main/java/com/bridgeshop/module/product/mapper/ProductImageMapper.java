@@ -14,8 +14,8 @@ public class ProductImageMapper {
 
     public ProductImageDto mapToDto(ProductImage productImage) {
         return ProductImageDto.builder()
-                .filePath(productImage.getFilePath())
-                .fileName(productImage.getFileName())
+                .fileUrl(productImage.getFileUrl())
+                .fileKey(productImage.getFileKey())
                 .displayOrder(productImage.getDisplayOrder())
                 .build();
     }

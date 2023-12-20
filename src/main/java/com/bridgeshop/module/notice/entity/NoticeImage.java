@@ -27,19 +27,19 @@ public class NoticeImage extends BaseTimeEntity {
     @Column(nullable = false, length = 50)
     private NoticeImageType type;
 
-    @Column(nullable = false, length = 100)
-    private String filePath;
+    @Column(nullable = false, length = 512)
+    private String fileUrl;
 
-    @Column(nullable = false, length = 100)
-    private String fileName;
+    @Column(nullable = false, length = 512)
+    private String fileKey;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public NoticeImage(Notice notice, NoticeImageType type, String filePath, String fileName) {
+    public NoticeImage(Notice notice, NoticeImageType type, String fileUrl, String fileKey) {
         this.notice = notice;
         this.type = type;
-        this.filePath = filePath;
-        this.fileName = fileName;
+        this.fileUrl = fileUrl;
+        this.fileKey = fileKey;
     }
 
     // 설정자 메서드들
@@ -51,11 +51,11 @@ public class NoticeImage extends BaseTimeEntity {
         this.type = type;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 }

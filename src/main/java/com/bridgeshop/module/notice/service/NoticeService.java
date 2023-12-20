@@ -186,7 +186,7 @@ public class NoticeService {
 
         // status 체크
         if (noticeDto.getStatus() == null) {
-            throw new ValidationException("statusMissing", "쿠폰 상태를 선택해주세요.");
+            throw new ValidationException("statusMissing", "공지 상태를 선택해주세요.");
         }
     }
 
@@ -301,18 +301,6 @@ public class NoticeService {
             notice.setModalImage(noticeDto.getIsModalImage());
             isModified = true;
         }
-
-//        // 슬라이더 이미지 표시 여부 변경 확인 및 업데이트
-//        if (notice.isSliderImage() != noticeDto.isSliderImage()) {
-//            notice.setSliderImage(noticeDto.isSliderImage());
-//            isModified = true;
-//        }
-//
-//        // 모달 이미지 표시 여부 변경 확인 및 업데이트
-//        if (notice.isModalImage() != noticeDto.isModalImage()) {
-//            notice.setModalImage(noticeDto.isModalImage());
-//            isModified = true;
-//        }
 
         return isModified;
     }

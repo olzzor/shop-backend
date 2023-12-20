@@ -9,15 +9,15 @@ import lombok.NoArgsConstructor;
 @Getter
 public class ProductImageDto {
     private ProductDto product;
-    private String filePath;
-    private String fileName;
+    private String fileUrl;
+    private String fileKey;
     private int displayOrder;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public ProductImageDto(String filePath, String fileName, int displayOrder) {
-        this.filePath = filePath;
-        this.fileName = fileName;
+    public ProductImageDto(String fileUrl, String fileKey, int displayOrder) {
+        this.fileUrl = fileUrl;
+        this.fileKey = fileKey;
         this.displayOrder = displayOrder;
     }
 
@@ -26,12 +26,12 @@ public class ProductImageDto {
         this.product = productDto;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 
     public void setDisplayOrder(int displayOrder) {
