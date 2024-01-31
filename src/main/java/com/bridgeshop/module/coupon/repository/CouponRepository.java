@@ -10,8 +10,10 @@ import java.util.List;
 public interface CouponRepository extends JpaRepository<Coupon, Long>, CouponRepositoryCustom {
 
     @Query("SELECT c FROM Coupon c "
-            + "WHERE c.id IN (SELECT cu.coupon.id FROM CouponUser cu WHERE cu.user.id = :userId)"
-            + "OR c.id NOT IN (SELECT cu.coupon.id FROM CouponUser cu)")
+            + "WHERE (c.id IN (SELECT cu.coupon.id FROM CouponUser cu WHERE cu.user.id = :userId) "
+            + "OR c.id NOT IN (SELECT cu.coupon.id FROM CouponUser cu)) "
+            + "AND c.startValidDate <= CURRENT_DATE AND c.endValidDate >= CURRENT_DATE "
+            + "AND c.status = 'ACTIVE'")
     List<Coupon> findAllAvailableCouponsByUser(@Param("userId") Long userId);
 
     @Query("SELECT c FROM Coupon c "

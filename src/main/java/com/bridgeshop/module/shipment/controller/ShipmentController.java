@@ -75,7 +75,7 @@ public class ShipmentController {
         }
     }
 
-    @PostMapping("/update")
+    @PostMapping("/update/multiple")
     public ResponseEntity updateShipments(@RequestBody List<ShipmentDto> shipmentDtoList,
                                           @CookieValue(value = "token", required = false) String accessToken,
                                           @CookieValue(value = "refresh_token", required = false) String refreshToken,

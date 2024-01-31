@@ -19,7 +19,7 @@ public class Contact extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(nullable = false, name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     @Column(nullable = false, length = 50)

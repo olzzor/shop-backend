@@ -5,6 +5,7 @@ import com.bridgeshop.module.order.dto.OrderDetailDto;
 import com.bridgeshop.module.order.dto.OrderDto;
 import com.bridgeshop.module.order.dto.OrderListSearchRequest;
 import com.bridgeshop.module.order.entity.Order;
+import com.bridgeshop.module.order.entity.OrderDetail;
 import com.bridgeshop.module.order.entity.OrderStatus;
 import com.bridgeshop.module.order.mapper.OrderDetailMapper;
 import com.bridgeshop.module.order.mapper.OrderMapper;
@@ -13,9 +14,13 @@ import com.bridgeshop.module.product.dto.ProductDto;
 import com.bridgeshop.module.product.dto.ProductImageDto;
 import com.bridgeshop.module.product.entity.Product;
 import com.bridgeshop.module.product.entity.ProductImage;
+import com.bridgeshop.module.product.entity.ProductSize;
+import com.bridgeshop.module.product.entity.ProductStatus;
 import com.bridgeshop.module.product.mapper.ProductImageMapper;
 import com.bridgeshop.module.product.mapper.ProductMapper;
 import com.bridgeshop.module.product.mapper.ProductSizeMapper;
+import com.bridgeshop.module.product.repository.ProductRepository;
+import com.bridgeshop.module.product.repository.ProductSizeRepository;
 import com.bridgeshop.module.shipment.mapper.ShipmentMapper;
 import com.bridgeshop.module.user.entity.User;
 import com.bridgeshop.module.user.repository.UserRepository;
@@ -42,6 +47,8 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final ProductSizeRepository productSizeRepository;
     private final OrderMapper orderMapper;
     private final OrderDetailMapper orderDetailMapper;
     private final ProductMapper productMapper;
@@ -177,11 +184,29 @@ public class OrderService {
         // 주문자 이메일의 변경 사항을 검사하고 업데이트
         isModified |= updateIfDifferent(order.getBuyerEmail(), orderDto.getBuyerEmail(), order::setBuyerEmail);
 
+        OrderStatus osBefore = order.getStatus(); // 변경 전 주문 상태
+        OrderStatus osAfter = orderDto.getStatus(); // 변경 후 주문 상태
+
         // 주문 상태 변경이 있을 경우 업데이트
-        OrderStatus orderStatus = orderDto.getStatus();
-        if (order.getStatus() != orderStatus) {
-            order.setStatus(orderStatus);
+        if (osBefore != osAfter) {
+            order.setStatus(osAfter);
             isModified = true;
+            
+            // '주문 취소' -> '주문 완료' 업데이트의 경우
+            if (osBefore == OrderStatus.CANCEL_REQUESTED && osAfter == OrderStatus.CANCEL_COMPLETED) {
+                for (OrderDetail od : order.getOrderDetails()) {
+                    Product product = od.getProduct();
+                    ProductSize productSize = od.getProductSize();
+
+                    // 상품의 수량을 복원
+                    productSizeRepository.restoreQuantity(productSize.getId(), od.getQuantity());
+                    // '일시 품절' 혹은 '품절'의 상품 상태를 판매중으로 복원
+                    if (product.getStatus() != ProductStatus.ON_SALE) {
+                        product.setStatus(ProductStatus.ON_SALE);
+                        productRepository.save(product);
+                    }
+                }
+            }
         }
 
         if (isModified) {

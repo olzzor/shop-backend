@@ -11,12 +11,12 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/file-upload")
-public class FileUploadController {
+@RequestMapping("/api/toast-ui")
+public class ToastUIController {
 
     private final FileUploadService fileUploadService;
 
-    @PostMapping("/image")
+    @PostMapping("/image-upload")
     public ResponseEntity<?> uploadImage(@RequestParam("image") MultipartFile file,
                                          @RequestHeader("upload-type") String uploadType) {
         try {
@@ -29,7 +29,6 @@ public class FileUploadController {
             // 응답 형식
             Map<String, String> response = new HashMap<>();
             String savedFilePath = "http://localhost.test:8080/upload/" + uploadType + "/" + savedFileName;
-//            response.put("uploaded", "true"); // CKeditor 응답용
             response.put("url", savedFilePath); // 저장된 파일의 URL
 
             return ResponseEntity.ok(response);

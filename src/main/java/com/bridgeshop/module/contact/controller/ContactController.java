@@ -7,6 +7,7 @@ import com.bridgeshop.module.contact.entity.Contact;
 import com.bridgeshop.module.contact.service.ContactService;
 import com.bridgeshop.common.exception.UnauthorizedException;
 import com.bridgeshop.module.user.service.JwtService;
+import com.bridgeshop.common.service.SendMailService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,7 @@ public class ContactController {
 
     private final JwtService jwtService;
     private final ContactService contactService;
+    private final SendMailService sendMailService;
 
     @GetMapping("/history")
     public ResponseEntity getContactHistory(@CookieValue(value = "token", required = false) String accessToken,
@@ -100,10 +102,13 @@ public class ContactController {
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token == null) {
-            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
+            contactService.createInquiry(null, contactDto);
+        } else {
+            contactService.createInquiry(jwtService.getId(token), contactDto);
         }
 
-        contactService.createInquiry(jwtService.getId(token), contactDto);
+        sendMailService.sendContactInquiryMail(contactDto);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -120,10 +125,12 @@ public class ContactController {
         }
 
         contactService.createAnswer(jwtService.getId(token), contactDto);
+        sendMailService.sendContactAnswerMail(contactDto);
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/update")
+    @PostMapping("/update/multiple")
     public ResponseEntity updateContacts(@RequestBody List<ContactDto> contactDtoList,
                                          @CookieValue(value = "token", required = false) String accessToken,
                                          @CookieValue(value = "refresh_token", required = false) String refreshToken,

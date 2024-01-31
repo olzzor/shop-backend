@@ -85,7 +85,7 @@ public class OrderDetailService {
     }
 
     @Transactional
-    public void insertOrderDetail(Long userId, Order order, Shipment shipment) {
+    public List<OrderDetail> insertOrderDetail(Long userId, Order order, Shipment shipment) {
 
         Cart cart = cartRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
@@ -116,7 +116,8 @@ public class OrderDetailService {
 
             orderDetailList.add(orderDetail);
         }
-        orderDetailRepository.saveAll(orderDetailList);
+
+        return orderDetailRepository.saveAll(orderDetailList);
     }
 
     /**

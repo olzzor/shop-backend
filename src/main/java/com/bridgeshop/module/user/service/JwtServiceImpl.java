@@ -42,6 +42,13 @@ public class JwtServiceImpl implements JwtService {
         return createToken("id", userId, expTime);
     }
 
+    @Override
+    public String createPasswordResetToken(Long userId) {
+        Date expTime = new Date();
+        expTime.setTime(expTime.getTime() + 1000 * 60 * 60 * 24); // 24시간 유효기간
+        return createToken("id", userId, expTime);
+    }
+
     private String createToken(String key, Object value, Date expTime) {
 
         byte[] secretByteKey = Base64.decode(Base64.encode(secretKey.getBytes()));

@@ -1,12 +1,14 @@
 package com.bridgeshop.module.order.controller;
 
+import com.bridgeshop.common.service.SendMailService;
 import com.bridgeshop.module.cart.entity.Cart;
 import com.bridgeshop.module.cart.service.CartProductService;
 import com.bridgeshop.module.cart.service.CartService;
 import com.bridgeshop.module.order.entity.Order;
-import com.bridgeshop.module.shipment.entity.Shipment;
+import com.bridgeshop.module.order.entity.OrderDetail;
 import com.bridgeshop.module.order.service.OrderDetailService;
 import com.bridgeshop.module.order.service.OrderService;
+import com.bridgeshop.module.shipment.entity.Shipment;
 import com.bridgeshop.module.shipment.service.ShipmentService;
 import com.bridgeshop.module.user.service.JwtService;
 import com.siot.IamportRestClient.IamportClient;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -36,6 +39,7 @@ public class VerifyController {
     private final CartProductService cartProductService;
     private final OrderDetailService orderDetailService;
     private final ShipmentService shipmentService;
+    private final SendMailService sendMailService;
 
     @Autowired
     JwtService jwtService;
@@ -73,11 +77,15 @@ public class VerifyController {
         // 주문, 배송, 주문 상세 정보 작성
         Order order = orderService.insertOrder(userId, payment);
         Shipment shipment = shipmentService.insertShipment(payment);
-        orderDetailService.insertOrderDetail(userId, order, shipment);
+        List<OrderDetail> orderDetailList = orderDetailService.insertOrderDetail(userId, order, shipment);
 
         // 카트 상품 삭제
         Cart cart = cartService.retrieveByUserId(userId);
         cartProductService.deleteByCartId(cart.getId());
+
+        // 주문 정보 안내 메일 전송
+//        OrderDto orderDto = orderService.getDto(order);
+        sendMailService.sendOrderMail(order, shipment, orderDetailList);
 
         return iamportResponse;
     }
