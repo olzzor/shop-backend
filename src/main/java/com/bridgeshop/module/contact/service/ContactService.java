@@ -155,9 +155,6 @@ public class ContactService {
     @Transactional
     public void insertInquiry(Long userId, ContactDto contactDto) {
 
-        // 작성자 정보 취득
-        Optional<User> userOptional = userRepository.findById(userId);
-
         // 최대 ref 값 찾기, 데이터가 없을 경우 0을 반환
         Long maxRef = contactRepository.findMaxRef();
         maxRef = (maxRef != null) ? maxRef : 0L;
@@ -175,8 +172,10 @@ public class ContactService {
                 .step(0)
                 .build();
 
-        if (userOptional.isPresent()) {
-            contact.setUser(userOptional.get());
+        if (userId != null) {
+            // 로그인한 사용자인 경우에만 사용자 정보를 가져와서 설정
+            Optional<User> userOptional = userRepository.findById(userId);
+            userOptional.ifPresent(contact::setUser);
         }
 
         // DB 등록

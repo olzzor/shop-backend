@@ -1,18 +1,16 @@
 package com.bridgeshop.module.user.controller;
 
-import com.bridgeshop.module.cart.service.CartService;
-import com.bridgeshop.module.user.dto.LoginResponse;
-import com.bridgeshop.common.dto.MailDto;
+import com.bridgeshop.common.service.SendMailService;
+import com.bridgeshop.common.util.CookieUtils;
 import com.bridgeshop.integration.feign.common.SocialLoginRequest;
+import com.bridgeshop.module.cart.service.CartService;
 import com.bridgeshop.module.payload.LoginRequest;
 import com.bridgeshop.module.user.dto.*;
-import com.bridgeshop.module.user.service.UserService;
-import com.bridgeshop.module.user.service.JwtService;
-import com.bridgeshop.module.user.service.RefreshTokenService;
-import com.bridgeshop.module.user.service.SendMailService;
 import com.bridgeshop.module.user.entity.User;
-import com.bridgeshop.common.util.CookieUtils;
-import jakarta.mail.MessagingException;
+import com.bridgeshop.module.user.service.JwtService;
+import com.bridgeshop.module.user.service.PasswordResetTokenService;
+import com.bridgeshop.module.user.service.RefreshTokenService;
+import com.bridgeshop.module.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -25,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 @RestController
@@ -38,6 +35,7 @@ public class UserController {
     private final CartService cartService;
     private final SendMailService sendMailService;
     private final RefreshTokenService refreshTokenService;
+    private final PasswordResetTokenService passwordResetTokenService;
 
     @Value("${app.cookie.domain}")
     private String cookieDomain;
@@ -178,29 +176,6 @@ public class UserController {
         return new ResponseEntity<>(userId, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/recover")
-    public ResponseEntity recoverAccount(@RequestBody UserDto userDto) {
-
-        String email = userDto.getEmail();
-
-        if (userService.existUserByEmail(email)) {
-            // 입력된 이메일의 계정이 존재하는 경우
-            try {
-                User user = userService.getUserByEmail(email);
-
-                MailDto maildto = sendMailService.writeTempPasswordMail(email, user.getName());
-                sendMailService.sendMail(maildto);
-
-                return new ResponseEntity<>("Success", HttpStatus.OK);
-            } catch (MessagingException | UnsupportedEncodingException ex) {
-                return new ResponseEntity<>("EmailSendFailure", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        } else {
-            // 입력된 이메일의 계정이 존재하지 않는 경우
-            return new ResponseEntity<>("Failure", HttpStatus.OK);
-        }
-    }
-
     /**
      * 회원 정보 변경
      */
@@ -244,6 +219,73 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
+
+    /**
+     * 비밀번호 재설정 토큰 검증
+     */
+    @GetMapping(value = "/verify-password-reset-token/{token}")
+    public ResponseEntity verifyPasswordResetToken(@PathVariable String token) {
+        boolean isValid = passwordResetTokenService.validatePasswordResetToken(token);
+
+        if (isValid) {
+            // 입력된 비밀번호 재설정 토큰이 유효한 경우
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            // 입력된 비밀번호 재설정 토큰이 유효하지않은 경우
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    /**
+     * 비밀번호 찾기 (재설정 링크 접근 토큰 발행 및 메일 전송)
+     */
+    @PostMapping(value = "/find-password")
+    public ResponseEntity findPassword(@RequestBody UserDto userDto) {
+
+        // 입력된 이메일의 계정 정보를 취득
+        User user = userService.getUserByEmail(userDto.getEmail());
+
+        // 비밀번호 재설정 토큰 생성 및 저장
+        String prToken = jwtService.createPasswordResetToken(user.getId());
+        passwordResetTokenService.addPasswordResetToken(prToken, user);
+
+        // 비밀번호 재설정 이메일 전송
+        sendMailService.sendPasswordResetMail(user.getEmail(), prToken);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * 비밀번호 재설정
+     */
+    @PostMapping(value = "/reset-password")
+    public ResponseEntity resetPassword(@RequestBody PasswordResetRequest prReq) {
+        boolean isValid = passwordResetTokenService.validatePasswordResetToken(prReq.getToken());
+
+        if (isValid) {
+            // 입력된 비밀번호 재설정 토큰이 유효한 경우
+            userService.updatePassword(prReq);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            // 입력된 비밀번호 재설정 토큰이 유효하지않은 경우
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+//    /**
+//     * 비밀번호 찾기 (임시 비밀번호 발급 및 메일 전송)
+//     */
+//    @PostMapping(value = "/recover-account")
+//    public ResponseEntity recoverAccount(@RequestBody UserDto userDto) {
+//
+//        // 입력된 이메일의 계정 정보를 취득
+//        User user = userService.getUserByEmail(userDto.getEmail());
+//
+//        MailDto maildto = sendMailService.writeTempPasswordMail(user.getEmail(), user.getName());
+//        sendMailService.sendHtmlMail(maildto);
+//
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
     @PostMapping(value = "/withdraw")
     public ResponseEntity withdrawAccount(@CookieValue(value = "token", required = false) String accessToken,
@@ -351,8 +393,8 @@ public class UserController {
         }
     }
 
-    @PostMapping("/update")
-    public ResponseEntity updateUsers(@RequestBody List<UserDto> userDtos,
+    @PostMapping("/update/multiple")
+    public ResponseEntity updateUsers(@RequestBody List<UserDto> userDtoList,
                                       @CookieValue(value = "token", required = false) String accessToken,
                                       @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                       HttpServletResponse res) {
@@ -360,7 +402,7 @@ public class UserController {
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            userService.updateUsers(userDtos);
+            userService.updateUsers(userDtoList);
             return new ResponseEntity<>(HttpStatus.OK);
 
         } else {

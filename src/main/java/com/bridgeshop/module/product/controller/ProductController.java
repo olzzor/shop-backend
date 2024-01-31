@@ -11,7 +11,6 @@ import com.bridgeshop.module.favorite.repository.FavoriteRepository;
 import com.bridgeshop.module.favorite.service.FavoriteService;
 import com.bridgeshop.module.product.dto.*;
 import com.bridgeshop.module.product.entity.Product;
-import com.bridgeshop.module.product.entity.ProductImage;
 import com.bridgeshop.module.product.service.ProductImageService;
 import com.bridgeshop.module.product.service.ProductService;
 import com.bridgeshop.module.product.service.ProductSizeService;

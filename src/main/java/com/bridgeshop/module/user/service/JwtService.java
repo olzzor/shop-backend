@@ -9,6 +9,8 @@ public interface JwtService {
 
     String createRefreshToken(Long id);
 
+    String createPasswordResetToken(Long id);
+
     String reissueToken(String token);
 
     Claims getClaims(String token);

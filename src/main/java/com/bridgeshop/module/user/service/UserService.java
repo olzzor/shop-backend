@@ -1,5 +1,6 @@
 package com.bridgeshop.module.user.service;
 
+import com.bridgeshop.module.user.dto.PasswordResetRequest;
 import com.bridgeshop.integration.feign.common.SocialAuthResponse;
 import com.bridgeshop.integration.feign.common.SocialLoginRequest;
 import com.bridgeshop.integration.feign.common.SocialUserResponse;
@@ -10,8 +11,10 @@ import com.bridgeshop.common.exception.UnauthorizedException;
 import com.bridgeshop.common.exception.ValidationException;
 import com.bridgeshop.module.payload.LoginRequest;
 import com.bridgeshop.module.user.dto.*;
+import com.bridgeshop.module.user.entity.PasswordResetToken;
 import com.bridgeshop.module.user.mapper.UserMapper;
 import com.bridgeshop.module.user.entity.User;
+import com.bridgeshop.module.user.repository.PasswordResetTokenRepository;
 import com.bridgeshop.module.user.repository.UserRepository;
 import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
@@ -34,6 +37,7 @@ public class UserService {
 
     private final List<SocialLoginService> loginServices;
 
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
@@ -44,7 +48,7 @@ public class UserService {
 
     public User retrieveById(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("userNotFound", "유저 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
     }
 
     public UserDto convertToDto(User user) {
@@ -142,9 +146,8 @@ public class UserService {
                 .build();
     }
 
-    /**
-     * 아래부터 작성
-     **/
+    /** 아래부터 작성 *****************************************/
+
     public boolean existUser(Long id) {
         return userRepository.existsById(id);
     }
@@ -155,7 +158,7 @@ public class UserService {
 
     public User getUserByEmail(String email) {
         return userRepository.findByEmailAndAuthProvider(email, AuthProvider.LOCAL)
-                .orElseThrow(() -> new NotFoundException("userNotFound", "존재하지 않는 계정입니다."));
+                .orElseThrow(() -> new NotFoundException("userNotFound", "계정이 존재하지 않습니다."));
     }
 
     public Page<User> retrieveAllPaginated(Pageable pageable) {
@@ -352,6 +355,18 @@ public class UserService {
         } else if (!newPassword.trim().equals(newPasswordConfirm.trim())) {
             throw new ValidationException("newPasswordConfirmMismatch", "새 비밀번호가 일치하지 않습니다.");
         }
+
+        user.setPassword(passwordEncoder.encode(newPassword.trim()));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void updatePassword(PasswordResetRequest passwordResetRequest) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(passwordResetRequest.getToken())
+                .orElseThrow(() -> new NotFoundException("passwordResetTokenNotFound", "패스워드 재설정 토큰 정보를 찾을 수 없습니다."));
+
+        User user = passwordResetToken.getUser();
+        String newPassword = passwordResetRequest.getPassword();
 
         user.setPassword(passwordEncoder.encode(newPassword.trim()));
         userRepository.save(user);

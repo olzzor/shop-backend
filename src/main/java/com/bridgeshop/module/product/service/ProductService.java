@@ -1,11 +1,11 @@
 package com.bridgeshop.module.product.service;
 
+import com.bridgeshop.common.exception.NotFoundException;
+import com.bridgeshop.common.exception.ValidationException;
 import com.bridgeshop.module.category.dto.CategoryDto;
 import com.bridgeshop.module.category.entity.Category;
 import com.bridgeshop.module.category.mapper.CategoryMapper;
 import com.bridgeshop.module.category.repository.CategoryRepository;
-import com.bridgeshop.common.exception.NotFoundException;
-import com.bridgeshop.common.exception.ValidationException;
 import com.bridgeshop.module.product.dto.*;
 import com.bridgeshop.module.product.entity.Product;
 import com.bridgeshop.module.product.entity.ProductStatus;

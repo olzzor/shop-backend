@@ -1,9 +1,11 @@
 package com.bridgeshop.module.shipment.service;
 
 import com.bridgeshop.common.exception.NotFoundException;
+import com.bridgeshop.common.exception.ValidationException;
+import com.bridgeshop.common.service.SendMailService;
 import com.bridgeshop.module.order.dto.OrderDetailDto;
-import com.bridgeshop.module.order.mapper.OrderDetailMapper;
 import com.bridgeshop.module.order.dto.OrderDto;
+import com.bridgeshop.module.order.mapper.OrderDetailMapper;
 import com.bridgeshop.module.order.mapper.OrderMapper;
 import com.bridgeshop.module.product.dto.ProductDto;
 import com.bridgeshop.module.product.dto.ProductImageDto;
@@ -34,6 +36,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ShipmentService {
+
+    private final SendMailService sendMailService;
 
     private final ShipmentRepository shipmentRepository;
 
@@ -107,9 +111,18 @@ public class ShipmentService {
     @Transactional
     public void updateShipment(Shipment shipment, ShipmentDto shipmentDto) {
 
+        ShipmentStatus ssBefore = shipment.getStatus(); // 변경 전 배송 상태
+        ShipmentStatus ssAfter = shipmentDto.getStatus(); // 변경 후 배송 상태
+
         // 변경 사항을 감지하여 엔티티를 저장
         if (updateShipmentDetails(shipment, shipmentDto)) {
             shipmentRepository.save(shipment);
+
+            // '주문 접수' 혹은 '배송 준비' -> '배송 중' 업데이트의 경우, 배송 안내 메일 전송
+            if (ssAfter == ShipmentStatus.SHIPPING
+                    && (ssBefore == ShipmentStatus.ACCEPTED || ssBefore == ShipmentStatus.PREPARING)) {
+                sendMailService.sendShipmentMail(shipment);
+            }
         }
     }
 
@@ -127,9 +140,18 @@ public class ShipmentService {
             Shipment shipment = shipmentRepository.findById(shipmentDto.getId())
                     .orElseThrow(() -> new NotFoundException("shipmentNotFound", "배송 정보를 찾을 수 없습니다."));
 
+            ShipmentStatus ssBefore = shipment.getStatus(); // 변경 전 배송 상태
+            ShipmentStatus ssAfter = shipmentDto.getStatus(); // 변경 후 배송 상태
+
             // 변경 사항을 감지하여 엔티티를 저장
             if (updateShipmentDetails(shipment, shipmentDto)) {
                 shipmentRepository.save(shipment);
+
+                // '주문 접수' 혹은 '배송 준비' -> '배송 중' 업데이트의 경우, 배송 안내 메일 전송
+                if (ssAfter == ShipmentStatus.SHIPPING
+                        && (ssBefore == ShipmentStatus.ACCEPTED || ssBefore == ShipmentStatus.PREPARING)) {
+                    sendMailService.sendShipmentMail(shipment);
+                }
             }
         }
     }
@@ -157,10 +179,25 @@ public class ShipmentService {
             isModified = true; // 상태가 변경되었다면 수정됨으로 표시
         }
 
+        ShipmentStatus ssBefore = shipment.getStatus(); // 변경 전 배송 상태
+        ShipmentStatus ssAfter = shipmentDto.getStatus(); // 변경 후 배송 상태
+
         // 배송 상태 변경이 있을 경우 업데이트
-        if (shipmentDto.getStatus() != null && shipment.getStatus() != shipmentDto.getStatus()) {
-            shipment.setStatus(shipmentDto.getStatus());
+        if (ssBefore != ssAfter) {
+            shipment.setStatus(ssAfter);
             isModified = true; // 상태가 변경되었다면 수정됨으로 표시
+
+            // '주문 접수' 혹은 '배송 준비' -> '배송 중' 으로 변경되는 경우 필수 요건 검사
+            // '주문 접수' 혹은 '배송 준비' -> '배송 중' 업데이트의 경우, 택배사와 송장번호는 필수 입력 체크
+            if (ssAfter == ShipmentStatus.SHIPPING &&
+                    (ssBefore == ShipmentStatus.ACCEPTED || ssBefore == ShipmentStatus.PREPARING)) {
+
+                // 택배사와 송장번호가 제공되지 않았다면 예외 발생
+                if (shipmentDto.getCourierCompany() == null || shipmentDto.getTrackingNumber() == null) {
+                    throw new ValidationException("courierCompanyOrTrackingNumberMissing",
+                            "배송 상태를 '배송 중'으로 변경할 때는 택배사와 송장번호 입력이 필수입니다.");
+                }
+            }
         }
 
         // 변경된 사항이 있으면 true, 아니면 false를 반환
@@ -191,7 +228,7 @@ public class ShipmentService {
                 .recipientName(payment.getBuyerName())
                 .recipientPhone(payment.getBuyerTel())
                 .shippingAddress(payment.getBuyerAddr())
-                .courierCompany(null)  // TODO: 추후 변경
+                .courierCompany(null)  // TODO: 추후 변경 할 것
                 .trackingNumber("")
                 .status(ShipmentStatus.ACCEPTED)
                 .build();
