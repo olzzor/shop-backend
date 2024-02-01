@@ -11,6 +11,7 @@ import com.bridgeshop.module.shipment.entity.Shipment;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -32,6 +33,9 @@ public class SendMailService {
     private final SpringTemplateEngine templateEngine;
 
     private final ContactRepository contactRepository;
+
+    @Value("${app.password-reset.url}")
+    private String passwordResetBaseUrl;
 
 //    /**
 //     * 메일 전송
@@ -329,7 +333,7 @@ public class SendMailService {
      */
     private HashMap<String, String> setPasswordResetMailValues(String passwordResetToken) {
         // 비밀번호 재설정 페이지의 URL 작성
-        String passwordResetLink = "http://localhost.test:3000/member/reset-password/" + passwordResetToken;
+        String passwordResetLink = passwordResetBaseUrl + passwordResetToken;
 
         HashMap<String, String> mailValues = new HashMap<>();
         mailValues.put("passwordResetLink", passwordResetLink);
