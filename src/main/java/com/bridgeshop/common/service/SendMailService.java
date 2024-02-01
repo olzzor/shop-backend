@@ -10,7 +10,7 @@ import com.bridgeshop.module.shipment.entity.CourierCompany;
 import com.bridgeshop.module.shipment.entity.Shipment;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SendMailService {
 
     private final JavaMailSender mailSender;
@@ -34,7 +34,7 @@ public class SendMailService {
 
     private final ContactRepository contactRepository;
 
-    @Value("${app.password-reset.url}")
+    @Value("${app.url.password-reset}")
     private String passwordResetBaseUrl;
 
 //    /**

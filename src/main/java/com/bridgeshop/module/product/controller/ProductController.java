@@ -265,8 +265,7 @@ public class ProductController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to parse input data"));
 
 //            TypeReference<List<ProductSizeUpsertRequest>> typeRef = new TypeReference<List<ProductSizeUpsertRequest>>() {};
-        TypeReference<List<ProductSizeUpsertRequest>> typeRef = new TypeReference<>() {
-        };
+        TypeReference<List<ProductSizeUpsertRequest>> typeRef = new TypeReference<>() {};
         List<ProductSizeUpsertRequest> productSizeUpsertRequestList = JsonUtils.fromJson(sizesJson, typeRef);
 
         productService.checkInput(productUpsertRequest);
