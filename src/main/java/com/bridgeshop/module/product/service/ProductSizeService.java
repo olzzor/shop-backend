@@ -67,6 +67,7 @@ public class ProductSizeService {
         }
     }
 
+    @Transactional
     public List<ProductSize> insertProductSizes(Product product, List<ProductSizeUpsertRequest> productSizeUpsReqList) {
 
         List<ProductSize> productSizeList = new ArrayList<>();

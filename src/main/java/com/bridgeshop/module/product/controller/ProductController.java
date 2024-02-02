@@ -247,6 +247,7 @@ public class ProductController {
         }
     }
 
+    @Transactional
     @PostMapping("/register")
     public ResponseEntity registerProduct(@RequestParam("product") String productJson,
                                           @RequestParam("sizes") String sizesJson,
