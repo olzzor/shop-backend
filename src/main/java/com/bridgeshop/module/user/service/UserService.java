@@ -1,19 +1,20 @@
 package com.bridgeshop.module.user.service;
 
-import com.bridgeshop.module.user.dto.PasswordResetRequest;
-import com.bridgeshop.integration.feign.common.SocialAuthResponse;
-import com.bridgeshop.integration.feign.common.SocialLoginRequest;
-import com.bridgeshop.integration.feign.common.SocialUserResponse;
-import com.bridgeshop.module.user.entity.AuthProvider;
 import com.bridgeshop.common.exception.ExistsException;
 import com.bridgeshop.common.exception.NotFoundException;
 import com.bridgeshop.common.exception.UnauthorizedException;
 import com.bridgeshop.common.exception.ValidationException;
+import com.bridgeshop.integration.feign.common.SocialAuthResponse;
+import com.bridgeshop.integration.feign.common.SocialLoginRequest;
+import com.bridgeshop.integration.feign.common.SocialUserResponse;
+import com.bridgeshop.module.cart.entity.Cart;
+import com.bridgeshop.module.cart.repository.CartRepository;
 import com.bridgeshop.module.payload.LoginRequest;
 import com.bridgeshop.module.user.dto.*;
+import com.bridgeshop.module.user.entity.AuthProvider;
 import com.bridgeshop.module.user.entity.PasswordResetToken;
-import com.bridgeshop.module.user.mapper.UserMapper;
 import com.bridgeshop.module.user.entity.User;
+import com.bridgeshop.module.user.mapper.UserMapper;
 import com.bridgeshop.module.user.repository.PasswordResetTokenRepository;
 import com.bridgeshop.module.user.repository.UserRepository;
 import io.micrometer.common.util.StringUtils;
@@ -38,6 +39,7 @@ public class UserService {
     private final List<SocialLoginService> loginServices;
 
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
@@ -66,7 +68,7 @@ public class UserService {
 
     public LoginResponse doLogin(LoginRequest request) {
 
-        User user = userRepository.findByEmailAndAuthProvider(request.getEmail(), AuthProvider.LOCAL)
+        User user = userRepository.findByEmailAndAuthProviderWithActive(request.getEmail(), AuthProvider.LOCAL)
                 .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
 
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -79,6 +81,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public LoginResponse doSocialLogin(SocialLoginRequest request) {
         SocialLoginService loginService = this.getLoginService(request.getAuthProvider());
 
@@ -87,8 +90,10 @@ public class UserService {
         SocialUserResponse socialUserResponse = loginService.getUserInfo(socialAuthResponse.getAccess_token());
         log.info("socialUserResponse {} ", socialUserResponse.toString());
 
-        if (userRepository.findBySocialId(socialUserResponse.getId()).isEmpty()) {
-            this.joinUser(
+        // 등록된 유저가 아닌 경우
+        if (userRepository.findBySocialIdWithActive(socialUserResponse.getId()).isEmpty()) {
+            // 유저 신규 등록
+            UserJoinResponse userJoinResponse = this.joinUser(
                     UserJoinRequest.builder()
                             .name(socialUserResponse.getName())
                             .email(socialUserResponse.getEmail())
@@ -96,9 +101,20 @@ public class UserService {
                             .socialId(socialUserResponse.getId())
                             .build()
             );
+
+            User user = userRepository.findById(userJoinResponse.getId())
+                    .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
+
+            // 장바구니 작성
+            Cart cart = Cart.builder()
+                    .user(user)
+                    .activateFlag(true)
+                    .build();
+
+            cartRepository.save(cart);
         }
 
-        User user = userRepository.findBySocialId(socialUserResponse.getId())
+        User user = userRepository.findBySocialIdWithActive(socialUserResponse.getId())
                 .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
 
         return LoginResponse.builder()
@@ -146,18 +162,12 @@ public class UserService {
                 .build();
     }
 
-    /** 아래부터 작성 *****************************************/
+    /**
+     * 아래부터 작성
+     */
 
-    public boolean existUser(Long id) {
-        return userRepository.existsById(id);
-    }
-
-    public boolean existUserByEmail(String email) {
-        return userRepository.existsByEmailAndAuthProvider(email, AuthProvider.LOCAL);
-    }
-
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmailAndAuthProvider(email, AuthProvider.LOCAL)
+    public User getActiveUserByEmail(String email) {
+        return userRepository.findByEmailAndAuthProviderWithActive(email, AuthProvider.LOCAL)
                 .orElseThrow(() -> new NotFoundException("userNotFound", "계정이 존재하지 않습니다."));
     }
 
@@ -169,14 +179,10 @@ public class UserService {
         return userRepository.findByCondition(userListSearchRequest, pageable);
     }
 
-    private boolean isNullOrEmpty(String str) {
-        return Optional.ofNullable(str).map(String::isEmpty).orElse(true);
-    }
-
     @Transactional
     public Long insertUser(UserJoinRequest userJoinRequest) {
 
-        if (userRepository.existsByEmailAndAuthProvider(userJoinRequest.getEmail(), AuthProvider.LOCAL)) {
+        if (userRepository.existsByEmailAndAuthProviderWithActive(userJoinRequest.getEmail(), AuthProvider.LOCAL)) {
             throw new ExistsException("emailAlreadyExists", "계정이 이미 존재합니다.");
 
         } else {
@@ -226,14 +232,11 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(Long id) {
-        Optional<User> opUser = userRepository.findById(id);
-
-        if (opUser.isPresent()) {
-            userRepository.delete(opUser.get());
-        }
+    public void deactivateUser(Long id) {
+        User user = retrieveById(id);
+        user.setActivateFlag(false);
+        userRepository.save(user);
     }
-
 
     /**
      * 주어진 유저 정보 목록에 대해 업데이트를 수행

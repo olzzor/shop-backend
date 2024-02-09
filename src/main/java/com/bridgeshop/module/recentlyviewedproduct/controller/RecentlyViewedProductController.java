@@ -1,13 +1,14 @@
 package com.bridgeshop.module.recentlyviewedproduct.controller;
 
+import com.bridgeshop.common.exception.UnauthorizedException;
 import com.bridgeshop.module.product.dto.ProductDto;
+import com.bridgeshop.module.product.entity.Product;
 import com.bridgeshop.module.product.service.ProductService;
 import com.bridgeshop.module.recentlyviewedproduct.dto.RecentlyViewedProductDto;
 import com.bridgeshop.module.recentlyviewedproduct.dto.RecentlyViewedProductListResponse;
 import com.bridgeshop.module.recentlyviewedproduct.dto.RecentlyViewedProductRequest;
 import com.bridgeshop.module.recentlyviewedproduct.entity.RecentlyViewedProduct;
 import com.bridgeshop.module.recentlyviewedproduct.service.RecentlyViewedProductService;
-import com.bridgeshop.module.product.entity.Product;
 import com.bridgeshop.module.user.service.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -142,23 +143,17 @@ public class RecentlyViewedProductController {
                                                      @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                                      HttpServletResponse res) {
 
-        // 인증 토큰 조회
-        String token = jwtService.getToken(accessToken, refreshToken, res);
+        String token = jwtService.getToken(accessToken, refreshToken, res); // 인증 토큰 조회
 
-        // 토큰이 유효한지 확인
-        if (token != null) {
-            Long userId = jwtService.getId(token);
-
-            for (RecentlyViewedProductRequest rvpReq : recentlyViewedProductRequestList) {
-                // 유저의 상품 조회 기록을 작성
-                recentlyViewedProductService.syncRecentlyViewedProduct(userId, rvpReq);
-            }
-
-            return new ResponseEntity<>(HttpStatus.OK);
-
-        } else {
-            // 토큰이 유효하지 않은 경우, UNAUTHORIZED 에러 반환
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (token == null) { // 토큰이 유효하지 않은 경우
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        for (RecentlyViewedProductRequest rvpReq : recentlyViewedProductRequestList) {
+            // 유저의 상품 조회 기록을 작성
+            recentlyViewedProductService.syncRecentlyViewedProduct(jwtService.getId(token), rvpReq);
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

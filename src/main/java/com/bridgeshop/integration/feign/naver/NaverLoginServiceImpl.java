@@ -31,8 +31,6 @@ public class NaverLoginServiceImpl implements SocialLoginService {
     private String naverAppKey;
     @Value("${social.client.naver.client-secret}")
     private String naverAppSecret;
-    @Value("${social.client.naver.redirect-uri}")
-    private String naverRedirectUri;
     @Value("${social.client.naver.authorization-grant-type}")
     private String naverGrantType;
 
@@ -83,7 +81,6 @@ public class NaverLoginServiceImpl implements SocialLoginService {
 
         return SocialUserResponse.builder()
                 .id(naverUserInfo.getId())
-                .gender(naverUserInfo.getGender())
                 .name(naverUserInfo.getName())
                 .email(naverUserInfo.getEmail())
                 .build();

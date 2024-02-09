@@ -84,7 +84,6 @@ public class KakaoLoginServiceImpl implements SocialLoginService {
 
         return SocialUserResponse.builder()
                 .id(kaKaoLoginResponse.getId())
-                .gender(kakaoLoginData.getGender())
                 .name(name)
                 .email(kakaoLoginData.getEmail())
                 .build();

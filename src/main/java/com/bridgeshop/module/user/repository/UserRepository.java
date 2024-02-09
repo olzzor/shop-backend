@@ -5,15 +5,20 @@ import com.bridgeshop.module.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
-    Optional<User> findBySocialId(String socialId);
+
+    @Query("SELECT u FROM User u WHERE u.socialId = :socialId AND u.activateFlag = true")
+    Optional<User> findBySocialIdWithActive(String socialId);
 
     Page<User> findAllByOrderByIdDesc(Pageable pageable);
 
-    Optional<User> findByEmailAndAuthProvider(String email, AuthProvider authProvider);
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.authProvider = :authProvider AND u.activateFlag = true")
+    Optional<User> findByEmailAndAuthProviderWithActive(String email, AuthProvider authProvider);
 
-    boolean existsByEmailAndAuthProvider(String email, AuthProvider authProvider);
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email = :email AND u.authProvider = :authProvider AND u.activateFlag = true")
+    boolean existsByEmailAndAuthProviderWithActive(String email, AuthProvider authProvider);
 }

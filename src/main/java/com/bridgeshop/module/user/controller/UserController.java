@@ -243,7 +243,7 @@ public class UserController {
     public ResponseEntity findPassword(@RequestBody UserDto userDto) {
 
         // 입력된 이메일의 계정 정보를 취득
-        User user = userService.getUserByEmail(userDto.getEmail());
+        User user = userService.getActiveUserByEmail(userDto.getEmail());
 
         // 비밀번호 재설정 토큰 생성 및 저장
         String prToken = jwtService.createPasswordResetToken(user.getId());
@@ -297,7 +297,7 @@ public class UserController {
         if (token != null) {
             Long userId = jwtService.getId(token);
 
-            userService.deleteUser(userId);
+            userService.deactivateUser(userId);
             cartService.deactivateCart(userId);
 
             CookieUtils.deleteCookie(req, res, cookieDomain, "token");
@@ -373,23 +373,6 @@ public class UserController {
 
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-    }
-
-    @PostMapping(value = "/delete/{id}")
-    public ResponseEntity deleteUser(@PathVariable("id") Long id,
-                                     @CookieValue(value = "token", required = false) String accessToken,
-                                     @CookieValue(value = "refresh_token", required = false) String refreshToken,
-                                     HttpServletResponse res) {
-
-        String token = jwtService.getToken(accessToken, refreshToken, res);
-
-        if (token != null) {
-            userService.deleteUser(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-
-        } else {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
     }
 
