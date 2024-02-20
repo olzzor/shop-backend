@@ -3,14 +3,13 @@ package com.bridgeshop.module.cart.controller;
 import com.bridgeshop.module.cart.dto.AddToCartRequest;
 import com.bridgeshop.module.cart.dto.CartProductDto;
 import com.bridgeshop.module.cart.dto.CartProductUpdateRequest;
-import com.bridgeshop.module.cart.service.CartService;
 import com.bridgeshop.module.cart.entity.Cart;
 import com.bridgeshop.module.cart.service.CartProductService;
+import com.bridgeshop.module.cart.service.CartService;
 import com.bridgeshop.module.favorite.dto.FavoriteInfo;
 import com.bridgeshop.module.favorite.entity.Favorite;
 import com.bridgeshop.module.favorite.service.FavoriteService;
 import com.bridgeshop.module.product.entity.ProductSize;
-import com.bridgeshop.module.product.service.ProductService;
 import com.bridgeshop.module.product.service.ProductSizeService;
 import com.bridgeshop.module.user.service.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +29,6 @@ public class CartController {
 
     private final JwtService jwtService;
     private final CartService cartService;
-    private final ProductService productService;
     private final ProductSizeService productSizeService;
     private final CartProductService cartProductService;
     private final FavoriteService favoriteService;

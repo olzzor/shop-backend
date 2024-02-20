@@ -5,6 +5,7 @@ import com.bridgeshop.common.exception.ValidationException;
 import com.bridgeshop.common.service.SendMailService;
 import com.bridgeshop.module.order.dto.OrderDetailDto;
 import com.bridgeshop.module.order.dto.OrderDto;
+import com.bridgeshop.module.order.dto.OrderPaymentRequest;
 import com.bridgeshop.module.order.mapper.OrderDetailMapper;
 import com.bridgeshop.module.order.mapper.OrderMapper;
 import com.bridgeshop.module.product.dto.ProductDto;
@@ -228,6 +229,21 @@ public class ShipmentService {
                 .recipientName(payment.getBuyerName())
                 .recipientPhone(payment.getBuyerTel())
                 .shippingAddress(payment.getBuyerAddr())
+                .courierCompany(null)  // TODO: 추후 변경 할 것
+                .trackingNumber("")
+                .status(ShipmentStatus.ACCEPTED)
+                .build();
+
+        return shipmentRepository.save(shipment);
+    }
+
+    @Transactional
+    public Shipment insertShipmentForDirectDeposit(OrderPaymentRequest opReq) {
+
+        Shipment shipment = Shipment.builder()
+                .recipientName(opReq.getBuyerName())
+                .recipientPhone(opReq.getBuyerTel())
+                .shippingAddress(opReq.getBuyerAddr())
                 .courierCompany(null)  // TODO: 추후 변경 할 것
                 .trackingNumber("")
                 .status(ShipmentStatus.ACCEPTED)

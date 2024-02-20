@@ -4,6 +4,7 @@ import com.bridgeshop.common.exception.NotFoundException;
 import com.bridgeshop.module.order.dto.OrderDetailDto;
 import com.bridgeshop.module.order.dto.OrderDto;
 import com.bridgeshop.module.order.dto.OrderListSearchRequest;
+import com.bridgeshop.module.order.dto.OrderPaymentRequest;
 import com.bridgeshop.module.order.entity.Order;
 import com.bridgeshop.module.order.entity.OrderDetail;
 import com.bridgeshop.module.order.entity.OrderStatus;
@@ -247,6 +248,24 @@ public class OrderService {
                 .paymentAmount(payment.getAmount().intValue())
                 .cardNumber(payment.getCardNumber())
                 .status(OrderStatus.ORDER_RECEIVED)
+                .build();
+
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order insertOrderForDirectDeposit(Long userId, OrderPaymentRequest opReq) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
+
+        Order order = Order.builder()
+                .user(user)
+                .orderNumber(opReq.getMerchantUid())
+                .buyerEmail(opReq.getBuyerEmail())
+                .paymentMethod("무통장입금")
+                .paymentAmount(Integer.parseInt(opReq.getAmount()))
+                .cardNumber("")
+                .status(OrderStatus.PAYMENT_PENDING)
                 .build();
 
         return orderRepository.save(order);
