@@ -66,6 +66,11 @@ public class UserService {
         return user.map(User::isAdminFlag).orElse(false);
     }
 
+    public boolean isLocalUser(Long userId) {
+        User user = retrieveById(userId);
+        return AuthProvider.LOCAL.equals(user.getAuthProvider());
+    }
+
     public LoginResponse doLogin(LoginRequest request) {
 
         User user = userRepository.findByEmailAndAuthProviderWithActive(request.getEmail(), AuthProvider.LOCAL)
@@ -75,6 +80,7 @@ public class UserService {
             return LoginResponse.builder()
                     .id(user.getId())
                     .role(user.isAdminFlag() ? "admin" : "user") // 추가
+                    .authProvider(user.getAuthProvider().getDescription()) // 추가
                     .build();
         } else {
             throw new UnauthorizedException("passwordMismatch", "비밀번호가 일치하지 않습니다.");
@@ -120,6 +126,7 @@ public class UserService {
         return LoginResponse.builder()
                 .id(user.getId())
                 .role(user.isAdminFlag() ? "admin" : "user") // 추가
+                .authProvider(user.getAuthProvider().getDescription()) // 추가
                 .build();
     }
 

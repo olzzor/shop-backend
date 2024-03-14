@@ -1,9 +1,19 @@
 package com.bridgeshop.module.user.entity;
 
 public enum AuthProvider {
-    LOCAL,
-    GOOGLE,
-    FACEBOOK,
-    NAVER,
-    KAKAO
+    LOCAL("local"),
+    GOOGLE("google"),
+    FACEBOOK("facebook"),
+    NAVER("naver"),
+    KAKAO("kakao");
+
+    private final String description;
+
+    AuthProvider(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

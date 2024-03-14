@@ -59,7 +59,7 @@ public class AddressService {
         if (StringUtils.isBlank(auReq.getName())) {
             throw new ValidationException("nameMissing", "이름을 입력해주세요.");
         } else if (auReq.getName().trim().length() > MAX_NAME_LENGTH) {
-            throw new ValidationException("nameTooLong", "이름은 20자 이하로 입력해주세요.");
+            throw new ValidationException("nameTooLong","이름은 " + String.format("%,d", MAX_NAME_LENGTH) + "자 이하로 입력해주세요.");
         }
 
         // phoneNumber 체크
@@ -74,7 +74,7 @@ public class AddressService {
             if (!StringUtils.isNotBlank(auReq.getAddress2())) {
                 throw new ValidationException("address2Missing", "공동주택의 경우, 아파트, 동/호수 정보를 입력해주세요.");
             } else if (auReq.getAddress2().trim().length() > MAX_ADDRESS2_LENGTH) {
-                throw new ValidationException("address2TooLong", "주소는 100자 이하로 입력해주세요.");
+                throw new ValidationException("address2TooLong", "주소는 " + String.format("%,d", MAX_ADDRESS2_LENGTH) + "자 이하로 입력해주세요.");
             }
         }
     }

@@ -1,6 +1,5 @@
 package com.bridgeshop.common.controller;
 
-import com.bridgeshop.common.service.FileUploadService;
 import com.bridgeshop.common.service.S3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,6 @@ import java.util.TimeZone;
 @RequestMapping("/api/toast-ui")
 public class ToastUIController {
 
-    private final FileUploadService fileUploadService;
     private final S3UploadService s3UploadService;
 
     @PostMapping("/image-upload")
@@ -41,7 +39,8 @@ public class ToastUIController {
             Map<String, String> response = new HashMap<>();
             String s3Url = s3UploadService.saveFile(file, fileKey); // S3에 파일 업로드 및 URL 반환
             response.put("url", s3Url); // 저장된 파일의 URL
-            return ResponseEntity.ok(s3Url);
+
+            return ResponseEntity.ok(response);
 
 //            // 헤더 값에 따른 저장 경로 취득
 //            String uploadDir = fileUploadService.getUploadDir(uploadType);

@@ -172,23 +172,23 @@ public class ProductService {
         if (StringUtils.isBlank(productUpsReq.getName())) {
             throw new ValidationException("nameMissing", "상품명을 입력해주세요.");
         } else if (productUpsReq.getName().trim().length() > MAX_NAME_LENGTH) {
-            throw new ValidationException("nameTooLong", "상품명은 100자 이하로 입력해주세요.");
+            throw new ValidationException("nameTooLong", "상품명은 " + String.format("%,d", MAX_NAME_LENGTH) + "자 이하로 입력해주세요.");
         }
 
         // price 체크
         if (productUpsReq.getPrice() < 1) {
-            throw new ValidationException("priceInvalid", "가격을 올바르게 입력해주세요.");
+            throw new ValidationException("priceInvalid", "가격은 1 이상의 값이어야 합니다.");
         }
 
         // discountPer 체크
-        if (productUpsReq.getDiscountPer() < 0) {
-            throw new ValidationException("discountPerInvalid", "할인율을 올바르게 입력해주세요.");
+        if (productUpsReq.getDiscountPer() < 0 || productUpsReq.getDiscountPer() >= 100) {
+            throw new ValidationException("discountPerInvalid", "할인율은 0 이상 100 미만의 값이어야 합니다.");
         }
 
         // detail 체크
         if (StringUtils.isNotBlank(productUpsReq.getDetail())) {
             if (productUpsReq.getDetail().trim().length() > MAX_DETAIL_LENGTH) {
-                throw new ValidationException("detailTooLong", "상세 설명은 2000자 이하로 입력해주세요.");
+                throw new ValidationException("detailTooLong", "상세 설명은 " + String.format("%,d", MAX_DETAIL_LENGTH) + "자 이하로 입력해주세요.");
             }
         }
     }

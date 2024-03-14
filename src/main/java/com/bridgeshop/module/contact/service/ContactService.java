@@ -121,7 +121,7 @@ public class ContactService {
         if (!StringUtils.isNotBlank(contactDto.getInquirerName())) {
             throw new ValidationException("nameMissing", "이름을 입력해주세요.");
         } else if (contactDto.getInquirerName().trim().length() > MAX_NAME_LENGTH) {
-            throw new ValidationException("nameTooLong", "이름은 20자 이하로 입력해주세요.");
+            throw new ValidationException("nameTooLong", String.format("이름은 %d자 이하로 입력해주세요.", MAX_NAME_LENGTH));
         }
 
         if (!StringUtils.isNotBlank(contactDto.getInquirerEmail())) {
@@ -137,13 +137,13 @@ public class ContactService {
         if (!StringUtils.isNotBlank(contactDto.getTitle())) {
             throw new ValidationException("titleMissing", "제목을 입력해주세요.");
         } else if (contactDto.getTitle().trim().length() > MAX_TITLE_LENGTH) {
-            throw new ValidationException("titleTooLong", "제목은 100자 이하로 입력해주세요.");
+            throw new ValidationException("titleTooLong", String.format("제목은 100자 이하로 입력해주세요.", MAX_TITLE_LENGTH));
         }
 
         if (!StringUtils.isNotBlank(contactDto.getContent())) {
             throw new ValidationException("contentMissing", "내용을 입력해주세요.");
         } else if (contactDto.getContent().trim().length() > MAX_CONTENT_LENGTH) {
-            throw new ValidationException("contentTooLong", "내용은 5,000자 이하로 입력해주세요.");
+            throw new ValidationException("contentTooLong", String.format("내용은 5,000자 이하로 입력해주세요.", MAX_CONTENT_LENGTH));
         }
 
         insertInquiry(userId, contactDto);
@@ -191,7 +191,7 @@ public class ContactService {
         if (!StringUtils.isNotBlank(content)) {
             throw new ValidationException("contentMissing", "내용을 입력해주세요.");
         } else if (content.trim().length() > MAX_CONTENT_LENGTH) {
-            throw new ValidationException("contentTooLong", "내용은 5,000자 이하로 입력해주세요.");
+            throw new ValidationException("contentTooLong", "내용은 " + String.format("%,d", MAX_CONTENT_LENGTH) + "자 이하로 입력해주세요.");
         }
 
         insertAnswer(userId, contactDto);

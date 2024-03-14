@@ -134,11 +134,12 @@ public class UserController {
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            Long userId = jwtService.getId(token);
+            User user = userService.retrieveById(jwtService.getId(token));
 
             LoginResponse loginResponse = LoginResponse.builder()
-                    .id(userId)
-                    .role(userService.isAdminRole(userId) ? "admin" : "user")
+                    .id(user.getId())
+                    .role(user.isAdminFlag() ? "admin" : "user")
+                    .authProvider(user.getAuthProvider().getDescription())
                     .build();
 
             return new ResponseEntity<>(loginResponse, HttpStatus.OK);
@@ -159,6 +160,23 @@ public class UserController {
 
         if (token != null) {
             return new ResponseEntity<>(userService.isAdminRole(jwtService.getId(token)), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(false, HttpStatus.OK);
+        }
+    }
+
+    /**
+     * 추가
+     */
+    @GetMapping("/check-local-user")
+    public ResponseEntity<?> checkLocalAuth(@CookieValue(value = "token", required = false) String accessToken,
+                                            @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                            HttpServletResponse res) {
+
+        String token = jwtService.getToken(accessToken, refreshToken, res);
+
+        if (token != null) {
+            return new ResponseEntity<>(userService.isLocalUser(jwtService.getId(token)), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(false, HttpStatus.OK);
         }
