@@ -1,0 +1,69 @@
+package com.shop.common.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+import java.util.Map;
+
+/**
+ * 이미 존재하는 리소스에 대한 요청이 들어왔을 때 발생하는 예외입니다.
+ * 이 예외는 409 CONFLICT 상태 코드의 HTTP 응답을 생성합니다.
+ */
+@ResponseStatus(HttpStatus.CONFLICT)
+public class ExistsException extends RuntimeException {
+    private final String errorCode;
+    private Map<String, Object> body;
+
+    /**
+     * 지정된 오류 코드 및 세부 메시지로 새 ExistsException 을 구성합니다.
+     *
+     * @param errorCode 오류 코드.
+     * @param message   세부 메시지.
+     */
+    public ExistsException(String errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
+
+    /**
+     * 지정된 오류 코드, 세부 메시지 및 본문으로 새 NotFoundException 을 구성합니다.
+     *
+     * @param errorCode 오류 코드.
+     * @param message   세부 메시지.
+     * @param body      응답 본문.
+     */
+    public ExistsException(String errorCode, String message, Map<String, Object> body) {
+        super(message);
+        this.errorCode = errorCode;
+        this.body = body;
+    }
+
+    /**
+     * 지정된 세부 메시지와 원인으로 새 ExistsException 을 구성합니다.
+     *
+     * @param message 세부 메시지.
+     * @param cause   원인.
+     */
+    public ExistsException(String message, Throwable cause) {
+        super(message, cause);
+        this.errorCode = "";
+    }
+
+    /**
+     * 이 예외와 연결된 오류 코드를 반환합니다.
+     *
+     * @return 오류 코드.
+     */
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    /**
+     * 이 예외와 연결된 응답 본문을 반환합니다.
+     *
+     * @return 응답 본문.
+     */
+    public Map<String, Object> getBody() {
+        return body;
+    }
+}
