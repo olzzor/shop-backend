@@ -1,25 +1,25 @@
 package com.shop.module.favorite.service;
 
-import com.shop.module.favorite.dto.FavoriteInfo;
+import com.shop.common.exception.ExistsException;
+import com.shop.common.exception.NotFoundException;
+import com.shop.common.exception.UnavailableException;
 import com.shop.module.favorite.dto.FavoriteDto;
+import com.shop.module.favorite.dto.FavoriteInfo;
 import com.shop.module.favorite.entity.Favorite;
 import com.shop.module.favorite.mapper.FavoriteMapper;
 import com.shop.module.favorite.repository.FavoriteRepository;
 import com.shop.module.product.dto.ProductDto;
 import com.shop.module.product.dto.ProductSizeDto;
-import com.shop.common.exception.ExistsException;
-import com.shop.common.exception.NotFoundException;
-import com.shop.common.exception.UnavailableException;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.entity.ProductSize;
 import com.shop.module.product.entity.ProductStatus;
 import com.shop.module.product.service.ProductService;
 import com.shop.module.product.service.ProductSizeService;
 import com.shop.module.user.entity.User;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;

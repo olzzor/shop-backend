@@ -1,21 +1,21 @@
 package com.shop.module.recentlyviewedproduct.service;
 
 import com.shop.module.product.dto.ProductDto;
+import com.shop.module.product.entity.Product;
 import com.shop.module.product.service.ProductService;
 import com.shop.module.recentlyviewedproduct.dto.RecentlyViewedProductDto;
 import com.shop.module.recentlyviewedproduct.dto.RecentlyViewedProductRequest;
-import com.shop.module.recentlyviewedproduct.repository.RecentlyViewedProductRepository;
-import com.shop.module.product.entity.Product;
 import com.shop.module.recentlyviewedproduct.entity.RecentlyViewedProduct;
 import com.shop.module.recentlyviewedproduct.mapper.RecentlyViewedProductMapper;
+import com.shop.module.recentlyviewedproduct.repository.RecentlyViewedProductRepository;
 import com.shop.module.user.entity.User;
 import com.shop.module.user.service.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;

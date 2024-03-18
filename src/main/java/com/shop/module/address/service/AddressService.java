@@ -11,10 +11,10 @@ import com.shop.module.address.repository.AddressRepository;
 import com.shop.module.user.entity.User;
 import com.shop.module.user.repository.UserRepository;
 import io.micrometer.common.util.StringUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,5 +1,8 @@
 package com.shop.module.contact.service;
 
+import com.shop.common.exception.NotFoundException;
+import com.shop.common.exception.UnauthorizedException;
+import com.shop.common.exception.ValidationException;
 import com.shop.module.contact.dto.ContactDto;
 import com.shop.module.contact.dto.ContactListResponse;
 import com.shop.module.contact.dto.ContactListSearchRequest;
@@ -8,16 +11,13 @@ import com.shop.module.contact.entity.ContactStatus;
 import com.shop.module.contact.mapper.ContactMapper;
 import com.shop.module.contact.repository.ContactRepository;
 import com.shop.module.user.entity.User;
-import com.shop.common.exception.NotFoundException;
-import com.shop.common.exception.UnauthorizedException;
-import com.shop.common.exception.ValidationException;
 import com.shop.module.user.repository.UserRepository;
 import io.micrometer.common.util.StringUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;

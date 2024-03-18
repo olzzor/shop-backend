@@ -20,11 +20,11 @@ import com.shop.module.user.dto.UserDto;
 import com.shop.module.user.entity.User;
 import com.shop.module.user.mapper.UserMapper;
 import io.micrometer.common.util.StringUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

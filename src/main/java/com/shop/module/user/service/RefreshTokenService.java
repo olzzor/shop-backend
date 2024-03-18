@@ -3,9 +3,9 @@ package com.shop.module.user.service;
 import com.shop.module.user.entity.RefreshToken;
 import com.shop.module.user.entity.User;
 import com.shop.module.user.repository.RefreshTokenRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 

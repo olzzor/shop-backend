@@ -6,10 +6,10 @@ import com.shop.module.review.entity.Review;
 import com.shop.module.review.entity.ReviewImage;
 import com.shop.module.review.mapper.ReviewImageMapper;
 import com.shop.module.review.repository.ReviewImageRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.SimpleDateFormat;

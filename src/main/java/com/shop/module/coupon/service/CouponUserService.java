@@ -3,12 +3,12 @@ package com.shop.module.coupon.service;
 import com.shop.common.exception.NotFoundException;
 import com.shop.module.coupon.entity.Coupon;
 import com.shop.module.coupon.entity.CouponUser;
-import com.shop.module.user.entity.User;
 import com.shop.module.coupon.repository.CouponUserRepository;
+import com.shop.module.user.entity.User;
 import com.shop.module.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

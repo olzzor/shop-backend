@@ -6,9 +6,9 @@ import com.shop.module.category.repository.CategoryRepository;
 import com.shop.module.coupon.entity.Coupon;
 import com.shop.module.coupon.entity.CouponCategory;
 import com.shop.module.coupon.repository.CouponCategoryRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

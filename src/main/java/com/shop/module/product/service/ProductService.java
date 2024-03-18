@@ -15,13 +15,13 @@ import com.shop.module.product.mapper.ProductSizeMapper;
 import com.shop.module.product.repository.ProductRepository;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.text.SimpleDateFormat;
@@ -80,7 +80,7 @@ public class ProductService {
         return productRepository.findAllByStatusAndProductImages_DisplayOrder(ProductStatus.ON_SALE, 1, pageable);
     }
 
-    public Page<Product> searchOnSaleProducts(String query, Pageable pageable) {
+    public Page<Product> searchProductsOnSale(String query, Pageable pageable) {
         return productRepository.searchByKeywords(query, pageable);
     }
 
@@ -274,7 +274,6 @@ public class ProductService {
      * @param productUpdReq 업데이트에 사용될 요청 정보
      * @return 변경 사항이 있었으면 true를, 아니면 false를 반환
      */
-    @Transactional
     private boolean updateProductDetails(Product product, ProductUpsertRequest productUpdReq) {
         boolean isModified = false;
 

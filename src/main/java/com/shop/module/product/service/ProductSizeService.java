@@ -9,10 +9,10 @@ import com.shop.module.product.entity.ProductSize;
 import com.shop.module.product.mapper.ProductSizeMapper;
 import com.shop.module.product.repository.ProductSizeRepository;
 import io.micrometer.common.util.StringUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,22 +1,22 @@
 package com.shop.module.cart.service;
 
+import com.shop.common.exception.NotFoundException;
+import com.shop.common.exception.UnavailableException;
 import com.shop.module.cart.dto.CartProductDto;
 import com.shop.module.cart.entity.Cart;
 import com.shop.module.cart.entity.CartProduct;
 import com.shop.module.cart.repository.CartProductRepository;
 import com.shop.module.cart.repository.CartRepository;
-import com.shop.common.exception.NotFoundException;
-import com.shop.common.exception.UnavailableException;
 import com.shop.module.favorite.entity.Favorite;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.entity.ProductSize;
 import com.shop.module.product.entity.ProductStatus;
 import com.shop.module.user.entity.User;
 import com.shop.module.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;

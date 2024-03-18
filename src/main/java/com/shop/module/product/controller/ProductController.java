@@ -1,8 +1,8 @@
 package com.shop.module.product.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.shop.common.exception.UnauthorizedException;
 import com.shop.common.service.FileUploadService;
-import com.shop.common.service.S3UploadService;
 import com.shop.common.util.JsonUtils;
 import com.shop.module.category.service.CategoryService;
 import com.shop.module.favorite.dto.FavoriteDto;
@@ -15,9 +15,7 @@ import com.shop.module.product.service.ProductImageService;
 import com.shop.module.product.service.ProductService;
 import com.shop.module.product.service.ProductSizeService;
 import com.shop.module.user.service.JwtService;
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,7 +45,6 @@ public class ProductController {
     private final CategoryService categoryService;
     private final FavoriteService favoriteService;
     private final FileUploadService fileUploadService;
-    private final S3UploadService s3UploadService;
 
     private final FavoriteRepository favoriteRepository;
 
@@ -111,7 +109,7 @@ public class ProductController {
     public ResponseEntity searchProductQuery(@PathVariable("query") String query,
                                              Pageable pageable) {
 
-        Page<Product> productPage = productService.searchOnSaleProducts(query, pageable);
+        Page<Product> productPage = productService.searchProductsOnSale(query, pageable);
 
         ProductListResponse productListResponse = ProductListResponse.builder()
                 .products(productService.getDtoListWithMainImage(productPage.getContent()))
@@ -301,8 +299,7 @@ public class ProductController {
                 ProductUpsertRequest productUpsertRequest = Optional.ofNullable(JsonUtils.fromJson(productJson, ProductUpsertRequest.class))
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to parse input data"));
 
-                TypeReference<List<ProductSizeUpsertRequest>> typeRef = new TypeReference<>() {
-                };
+                TypeReference<List<ProductSizeUpsertRequest>> typeRef = new TypeReference<>() {};
                 List<ProductSizeUpsertRequest> productSizeUpsertRequestList = JsonUtils.fromJson(sizesJson, typeRef);
 
                 // 기존 상품 정보 취득

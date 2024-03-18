@@ -4,9 +4,9 @@ import com.shop.common.exception.NotFoundException;
 import com.shop.module.user.entity.PasswordResetToken;
 import com.shop.module.user.entity.User;
 import com.shop.module.user.repository.PasswordResetTokenRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

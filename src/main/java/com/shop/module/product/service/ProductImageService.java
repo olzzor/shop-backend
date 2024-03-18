@@ -9,10 +9,10 @@ import com.shop.module.product.entity.Product;
 import com.shop.module.product.entity.ProductImage;
 import com.shop.module.product.mapper.ProductImageMapper;
 import com.shop.module.product.repository.ProductImageRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
