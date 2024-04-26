@@ -11,6 +11,6 @@ public class ProductUpsertRequest {
     private String name;
     private int price;
     private int discountPer;
-    private String detail;
+    private Boolean isDisplay = true;
     private ProductStatus status;
 }

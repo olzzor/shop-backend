@@ -1,14 +1,15 @@
 package com.shop.module.product.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.shop.common.entity.BaseTimeEntity;
 import com.shop.module.cart.entity.CartProduct;
 import com.shop.module.category.entity.Category;
 import com.shop.module.coupon.entity.CouponProduct;
-import com.shop.module.favorite.entity.Favorite;
 import com.shop.module.order.entity.OrderDetail;
 import com.shop.module.recentlyviewedproduct.entity.RecentlyViewedProduct;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.shop.module.recommendedproduct.entity.RecommendedProduct;
+import com.shop.module.wishlist.entity.Wishlist;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -40,18 +41,21 @@ public class Product extends BaseTimeEntity implements Serializable {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(length = 2000)
-    private String detail;
-
     @Column(nullable = false)
     private int price;
 
     @Column(nullable = false)
     private int discountPer;
 
+    @Column(nullable = false)
+    private boolean isDisplay;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ProductStatus status;
+
+    @OneToOne(mappedBy = "product", fetch = FetchType.LAZY)
+    private ProductDetail productDetail;
 
     @OneToMany(mappedBy = "product")
     @JsonBackReference
@@ -71,7 +75,7 @@ public class Product extends BaseTimeEntity implements Serializable {
 
     @OneToMany(mappedBy = "product")
     @JsonBackReference
-    private List<Favorite> favorites = new ArrayList<>();
+    private List<Wishlist> wishlist = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
     @JsonBackReference
@@ -81,15 +85,19 @@ public class Product extends BaseTimeEntity implements Serializable {
     @JsonBackReference
     private List<RecentlyViewedProduct> recentlyViewedProducts = new ArrayList<>();
 
+    @OneToMany(mappedBy = "product")
+    @JsonBackReference
+    private List<RecommendedProduct> recommendedProducts = new ArrayList<>();
+
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public Product(Category category, String code, String name, String detail, int price, int discountPer, ProductStatus status) {
+    public Product(Category category, String code, String name, int price, int discountPer, Boolean isDisplay, ProductStatus status) {
         this.category = category;
         this.code = code;
         this.name = name;
-        this.detail = detail;
         this.price = price;
         this.discountPer = discountPer;
+        this.isDisplay = (isDisplay == null) ? true : isDisplay; // 기본값 설정
         this.status = status;
     }
 
@@ -106,16 +114,16 @@ public class Product extends BaseTimeEntity implements Serializable {
         this.name = name;
     }
 
-    public void setDetail(String detail) {
-        this.detail = detail;
-    }
-
     public void setPrice(int price) {
         this.price = price;
     }
 
     public void setDiscountPer(int discountPer) {
         this.discountPer = discountPer;
+    }
+
+    public void setDisplay(boolean isDisplay) {
+        this.isDisplay = isDisplay;
     }
 
     public void setStatus(ProductStatus status) {

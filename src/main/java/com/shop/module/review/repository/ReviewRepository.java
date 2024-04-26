@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewRepositoryCustom {
 
-    Optional<Review> findByOrder_Id(Long orderId);
+    Optional<Review> findByOrderDetail_Id(Long orderDetailId);
 
-    Page<Review> findAllByActivateFlag(boolean activateFlag, Pageable pageable);
+    Page<Review> findAllByIsActivate(boolean isActivate, Pageable pageable);
 }

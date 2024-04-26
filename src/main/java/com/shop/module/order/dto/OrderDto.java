@@ -1,7 +1,6 @@
 package com.shop.module.order.dto;
 
 import com.shop.module.order.entity.OrderStatus;
-import com.shop.module.review.dto.ReviewDto;
 import com.shop.module.user.dto.UserDto;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,7 +24,6 @@ public class OrderDto {
     private LocalDateTime regDate;
     private LocalDateTime modDate;
     private List<OrderDetailDto> orderDetails;
-    private ReviewDto review;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
@@ -85,9 +83,5 @@ public class OrderDto {
 
     public void setOrderDetails(List<OrderDetailDto> orderDetailDtoList) {
         this.orderDetails = orderDetailDtoList;
-    }
-
-    public void setReview(ReviewDto reviewDto) {
-        this.review = reviewDto;
     }
 }

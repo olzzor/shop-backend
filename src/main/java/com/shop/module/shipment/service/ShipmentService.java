@@ -62,7 +62,7 @@ public class ShipmentService {
                 .orElseThrow(() -> new NotFoundException("shipmentNotFound", "배송 정보를 찾을 수 없습니다."));
     }
 
-    public ShipmentDto getShipmentDto(Shipment shipment) {
+    public ShipmentDto getDto(Shipment shipment) {
         ShipmentDto shipmentDto = shipmentMapper.mapToDto(shipment);
 
         List<OrderDetailDto> orderDetailDtos = shipment.getOrderDetails().stream()
@@ -88,9 +88,9 @@ public class ShipmentService {
         return shipmentDto;
     }
 
-    public List<ShipmentDto> getShipmentDtoList(List<Shipment> shipmentList) {
+    public List<ShipmentDto> getDtoList(List<Shipment> shipmentList) {
         return shipmentList.stream()
-                .map(this::getShipmentDto)
+                .map(this::getDto)
                 .collect(Collectors.toList());
     }
 
@@ -98,7 +98,7 @@ public class ShipmentService {
         return shipmentRepository.findDistinctShipmentByOrderDetailsOrderOrderNumberDescIdAsc(pageable);
     }
 
-    public Page<Shipment> searchShipmentList(ShipmentListSearchRequest shipmentListSearchRequest, Pageable pageable) {
+    public Page<Shipment> searchAllPaginated(ShipmentListSearchRequest shipmentListSearchRequest, Pageable pageable) {
         return shipmentRepository.findByCondition(shipmentListSearchRequest, pageable);
     }
 
@@ -119,9 +119,9 @@ public class ShipmentService {
         if (updateShipmentDetails(shipment, shipmentDto)) {
             shipmentRepository.save(shipment);
 
-            // '주문 접수' 혹은 '배송 준비' -> '배송 중' 업데이트의 경우, 배송 안내 메일 전송
-            if (ssAfter == ShipmentStatus.SHIPPING
-                    && (ssBefore == ShipmentStatus.ACCEPTED || ssBefore == ShipmentStatus.PREPARING)) {
+            // '발송 준비 중' 혹은 '발송 처리 중' -> '발송 완료' 업데이트의 경우, 발송 안내 메일 전송
+            if ((ssBefore == ShipmentStatus.PREPARING || ssBefore == ShipmentStatus.PROCESSING)
+                    && ssAfter == ShipmentStatus.SHIPPED) {
                 sendMailService.sendShipmentMail(shipment);
             }
         }
@@ -148,9 +148,9 @@ public class ShipmentService {
             if (updateShipmentDetails(shipment, shipmentDto)) {
                 shipmentRepository.save(shipment);
 
-                // '주문 접수' 혹은 '배송 준비' -> '배송 중' 업데이트의 경우, 배송 안내 메일 전송
-                if (ssAfter == ShipmentStatus.SHIPPING
-                        && (ssBefore == ShipmentStatus.ACCEPTED || ssBefore == ShipmentStatus.PREPARING)) {
+                // '발송 준비 중' 혹은 '발송 처리 중' -> '발송 완료' 업데이트의 경우, 배송 안내 메일 전송
+                if ((ssBefore == ShipmentStatus.PREPARING || ssBefore == ShipmentStatus.PROCESSING)
+                        && ssAfter == ShipmentStatus.SHIPPED) {
                     sendMailService.sendShipmentMail(shipment);
                 }
             }
@@ -188,10 +188,10 @@ public class ShipmentService {
             shipment.setStatus(ssAfter);
             isModified = true; // 상태가 변경되었다면 수정됨으로 표시
 
-            // '주문 접수' 혹은 '배송 준비' -> '배송 중' 으로 변경되는 경우 필수 요건 검사
-            // '주문 접수' 혹은 '배송 준비' -> '배송 중' 업데이트의 경우, 택배사와 송장번호는 필수 입력 체크
-            if (ssAfter == ShipmentStatus.SHIPPING &&
-                    (ssBefore == ShipmentStatus.ACCEPTED || ssBefore == ShipmentStatus.PREPARING)) {
+            // '발송 준비 중' 혹은 '발송 처리 중' -> '발송 완료' 으로 변경되는 경우 필수 요건 검사
+            // '발송 준비 중' 혹은 '발송 처리 중' -> '발송 완료' 업데이트의 경우, 택배사와 송장번호는 필수 입력 체크
+            if ((ssBefore == ShipmentStatus.PREPARING || ssBefore == ShipmentStatus.PROCESSING)
+                    && ssAfter == ShipmentStatus.SHIPPED) {
 
                 // 택배사와 송장번호가 제공되지 않았다면 예외 발생
                 if (shipmentDto.getCourierCompany() == null || shipmentDto.getTrackingNumber() == null) {
@@ -231,7 +231,7 @@ public class ShipmentService {
                 .shippingAddress(payment.getBuyerAddr())
                 .courierCompany(null)  // TODO: 추후 변경 할 것
                 .trackingNumber("")
-                .status(ShipmentStatus.ACCEPTED)
+                .status(ShipmentStatus.PREPARING)
                 .build();
 
         return shipmentRepository.save(shipment);
@@ -246,7 +246,7 @@ public class ShipmentService {
                 .shippingAddress(opReq.getBuyerAddr())
                 .courierCompany(null)  // TODO: 추후 변경 할 것
                 .trackingNumber("")
-                .status(ShipmentStatus.ACCEPTED)
+                .status(ShipmentStatus.PREPARING)
                 .build();
 
         return shipmentRepository.save(shipment);

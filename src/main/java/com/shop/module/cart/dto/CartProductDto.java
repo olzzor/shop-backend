@@ -1,7 +1,7 @@
 package com.shop.module.cart.dto;
 
 import com.shop.module.coupon.dto.CouponDto;
-import com.shop.module.favorite.dto.FavoriteInfo;
+import com.shop.module.wishlist.dto.WishlistInfo;
 import com.shop.module.product.dto.ProductDto;
 import com.shop.module.product.dto.ProductSizeDto;
 import lombok.AccessLevel;
@@ -19,7 +19,7 @@ public class CartProductDto {
     private int quantity;
     private CouponDto coupon;
 
-    private FavoriteInfo favoriteInfo; // 추가
+    private WishlistInfo wishlistInfo; // 추가
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
@@ -53,8 +53,8 @@ public class CartProductDto {
         this.coupon = coupon;
     }
 
-    public void setFavoriteInfo(FavoriteInfo favoriteInfo) {
-        this.favoriteInfo = favoriteInfo;
+    public void setWishlistInfo(WishlistInfo wishlistInfo) {
+        this.wishlistInfo = wishlistInfo;
     }
 }
 

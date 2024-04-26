@@ -1,4 +1,4 @@
-package com.shop.module.favorite.entity;
+package com.shop.module.wishlist.entity;
 
 import com.shop.common.entity.BaseTimeEntity;
 import com.shop.module.product.entity.Product;
@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-@Table(name = "favorites")
-public class Favorite extends BaseTimeEntity {
+@Table(name = "wishlists")
+public class Wishlist extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,7 +37,7 @@ public class Favorite extends BaseTimeEntity {
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public Favorite(User user, Product product, ProductSize productSize) {
+    public Wishlist(User user, Product product, ProductSize productSize) {
         this.user = user;
         this.product = product;
         this.productSize = productSize;

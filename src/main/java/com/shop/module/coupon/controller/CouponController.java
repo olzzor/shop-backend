@@ -1,12 +1,12 @@
 package com.shop.module.coupon.controller;
 
+import com.shop.common.exception.UnauthorizedException;
 import com.shop.module.coupon.dto.*;
+import com.shop.module.coupon.entity.Coupon;
 import com.shop.module.coupon.service.CouponCategoryService;
 import com.shop.module.coupon.service.CouponProductService;
 import com.shop.module.coupon.service.CouponService;
 import com.shop.module.coupon.service.CouponUserService;
-import com.shop.module.coupon.entity.Coupon;
-import com.shop.common.exception.UnauthorizedException;
 import com.shop.module.user.service.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,15 +38,14 @@ public class CouponController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-            Coupon coupon = couponService.retrieveById(id);
-            CouponDto couponDto = couponService.getCouponDtoDetail(coupon);
-
-            return new ResponseEntity<>(couponDto, HttpStatus.OK);
-
-        } else { // 토큰이 유효하지 않은 경우
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        Coupon coupon = couponService.retrieveById(id);
+        CouponDto couponDto = couponService.getCouponDtoDetail(coupon);
+
+        return new ResponseEntity<>(couponDto, HttpStatus.OK);
     }
 
     @GetMapping("/list")
@@ -58,20 +56,19 @@ public class CouponController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-            Page<Coupon> couponPage = couponService.retrieveAllPaged(pageable);
-            List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponPage.getContent());
-
-            CouponListResponse couponListResponse = CouponListResponse.builder()
-                    .coupons(couponDtoList)
-                    .totalPages(couponPage.getTotalPages())
-                    .build();
-
-            return new ResponseEntity<>(couponListResponse, HttpStatus.OK);
-
-        } else { // 토큰이 유효하지 않은 경우
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        Page<Coupon> couponPage = couponService.retrieveAllPaged(pageable);
+        List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponPage.getContent());
+
+        CouponListResponse couponListResponse = CouponListResponse.builder()
+                .coupons(couponDtoList)
+                .totalPages(couponPage.getTotalPages())
+                .build();
+
+        return new ResponseEntity<>(couponListResponse, HttpStatus.OK);
     }
 
     @GetMapping("/list/available/user")
@@ -81,15 +78,14 @@ public class CouponController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-            List<Coupon> couponList = couponService.retrieveAllForUser(jwtService.getId(token));
-            List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponList);
-
-            return new ResponseEntity<>(couponDtoList, HttpStatus.OK);
-
-        } else { // 토큰이 유효하지 않은 경우
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        List<Coupon> couponList = couponService.retrieveAllForUser(jwtService.getId(token));
+        List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponList);
+
+        return new ResponseEntity<>(couponDtoList, HttpStatus.OK);
     }
 
     @PostMapping("/list/available")
@@ -100,30 +96,64 @@ public class CouponController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-
-            Long userId = jwtService.getId(token);
-
-            List<CouponListAvailableResponse> responseList = new ArrayList<>();
-
-            for (CouponEligibilityRequest request : requestList) {
-
-                List<Coupon> couponList = couponService.getCouponListAvailable(userId, request);
-                List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponList);
-
-                CouponListAvailableResponse response = CouponListAvailableResponse.builder()
-                        .cartProductId(request.getCartProductId())
-                        .coupons(couponDtoList)
-                        .build();
-
-                responseList.add(response);
-            }
-
-            return new ResponseEntity<>(responseList, HttpStatus.OK);
-
-        } else { // 토큰이 유효하지 않은 경우
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        Long userId = jwtService.getId(token);
+
+        List<CouponListAvailableResponse> responseList = new ArrayList<>();
+
+        for (CouponEligibilityRequest request : requestList) {
+
+            List<Coupon> couponList = couponService.getAvailableCouponList(userId, request);
+            List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponList);
+
+            CouponListAvailableResponse response = CouponListAvailableResponse.builder()
+                    .cartProductId(request.getCartProductId())
+                    .coupons(couponDtoList)
+                    .build();
+
+            responseList.add(response);
+        }
+
+        return new ResponseEntity<>(responseList, HttpStatus.OK);
+    }
+
+    @PostMapping("/get-available-list")
+    public ResponseEntity getAvailableCouponList(@CookieValue(value = "token", required = false) String accessToken,
+                                                 @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                                 HttpServletResponse res) {
+
+        String token = jwtService.getToken(accessToken, refreshToken, res);
+
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
+        }
+
+        Long userId = jwtService.getId(token);
+
+        List<Coupon> couponList = couponService.getAvailableCouponListForCart(userId);
+        List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponList);
+
+        return new ResponseEntity<>(couponDtoList, HttpStatus.OK);
+    }
+
+    @PostMapping("/get-user-select")
+    public ResponseEntity getUserSelectCoupon(@CookieValue(value = "token", required = false) String accessToken,
+                                              @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                              HttpServletResponse res) {
+
+        String token = jwtService.getToken(accessToken, refreshToken, res);
+
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
+        }
+
+        Long userId = jwtService.getId(token);
+        Coupon coupon = couponService.getSelectedCouponForUser(userId);
+
+        return new ResponseEntity<>(coupon == null ? 0L : coupon.getId(), HttpStatus.OK);
     }
 
     @PostMapping("/search")
@@ -135,20 +165,19 @@ public class CouponController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-            Page<Coupon> couponPage = couponService.searchAllPaginated(couponListSearchRequest, pageable);
-            List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponPage.getContent());
-
-            CouponListResponse couponListResponse = CouponListResponse.builder()
-                    .coupons(couponDtoList)
-                    .totalPages(couponPage.getTotalPages())
-                    .build();
-
-            return new ResponseEntity<>(couponListResponse, HttpStatus.OK);
-
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        Page<Coupon> couponPage = couponService.searchAllPaginated(couponListSearchRequest, pageable);
+        List<CouponDto> couponDtoList = couponService.getCouponDtoListDetail(couponPage.getContent());
+
+        CouponListResponse couponListResponse = CouponListResponse.builder()
+                .coupons(couponDtoList)
+                .totalPages(couponPage.getTotalPages())
+                .build();
+
+        return new ResponseEntity<>(couponListResponse, HttpStatus.OK);
     }
 
     @PostMapping("/regist")

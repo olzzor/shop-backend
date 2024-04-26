@@ -31,8 +31,8 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
                         QueryDslUtils.likeString(qUser.email, userListSearchRequest.getEmail()),
                         QueryDslUtils.likeString(qUser.name, userListSearchRequest.getName()),
                         QueryDslUtils.likeString(qUser.phoneNumber, userListSearchRequest.getPhoneNumber()),
-                        QueryDslUtils.eqBoolean(qUser.adminFlag, userListSearchRequest.getAdminFlag()),
-                        QueryDslUtils.eqBoolean(qUser.activateFlag, userListSearchRequest.getActivateFlag()),
+                        QueryDslUtils.eqBoolean(qUser.isAdmin, userListSearchRequest.getIsAdmin()),
+                        QueryDslUtils.eqBoolean(qUser.isActivate, userListSearchRequest.getIsActivate()),
                         QueryDslUtils.betweenDate(qUser.regDate, userListSearchRequest.getStartRegDate(), userListSearchRequest.getEndRegDate()),
                         QueryDslUtils.betweenDate(qUser.modDate, userListSearchRequest.getStartModDate(), userListSearchRequest.getEndModDate())
                 )

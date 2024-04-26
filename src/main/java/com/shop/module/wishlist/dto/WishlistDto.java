@@ -1,4 +1,4 @@
-package com.shop.module.favorite.dto;
+package com.shop.module.wishlist.dto;
 
 import com.shop.module.product.dto.ProductDto;
 import com.shop.module.product.dto.ProductSizeDto;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class FavoriteDto {
+public class WishlistDto {
     private Long id;
     private UserDto user;
     private ProductDto product;
@@ -18,7 +18,7 @@ public class FavoriteDto {
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public FavoriteDto(Long id) {
+    public WishlistDto(Long id) {
         this.id = id;
     }
 

@@ -3,6 +3,7 @@ package com.shop.module.order.dto;
 import com.shop.module.coupon.dto.CouponDto;
 import com.shop.module.product.dto.ProductDto;
 import com.shop.module.product.dto.ProductSizeDto;
+import com.shop.module.review.dto.ReviewDto;
 import com.shop.module.shipment.dto.ShipmentDto;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class OrderDetailDto {
     private int unitPrice;
     private int discountPer;        // 추가
     private int finalPrice;         // 추가
+    private ReviewDto review;       // 20240416 추가
     private LocalDateTime regDate;
     private LocalDateTime modDate;
 
@@ -79,6 +81,10 @@ public class OrderDetailDto {
 
     public void setFinalPrice(int finalPrice) {
         this.finalPrice = finalPrice;
+    }
+
+    public void setReview(ReviewDto reviewDto) {
+        this.review = reviewDto;
     }
 
     public void setRegDate(LocalDateTime regDate) {

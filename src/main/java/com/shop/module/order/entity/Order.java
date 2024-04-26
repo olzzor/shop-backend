@@ -1,9 +1,8 @@
 package com.shop.module.order.entity;
 
-import com.shop.common.entity.BaseTimeEntity;
-import com.shop.module.review.entity.Review;
-import com.shop.module.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.shop.common.entity.BaseTimeEntity;
+import com.shop.module.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -50,9 +49,6 @@ public class Order extends BaseTimeEntity {
     @JsonBackReference
     private List<OrderDetail> orderDetails = new ArrayList<>();
 
-    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
-    private Review review;
-
     // 빌더 패턴을 사용하는 생성자
     @Builder
     public Order(User user, String orderNumber, String buyerEmail, String paymentMethod,
@@ -97,9 +93,5 @@ public class Order extends BaseTimeEntity {
 
     public void setOrderDetails(List<OrderDetail> orderDetails) {
         this.orderDetails = orderDetails;
-    }
-
-    public void setReview(Review review) {
-        this.review = review;
     }
 }

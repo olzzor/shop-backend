@@ -98,11 +98,11 @@ public class Address extends BaseTimeEntity {
         this.address2 = address2;
     }
 
-    public void setIsApartment(boolean isApartment) {
+    public void setApartment(boolean isApartment) {
         this.isApartment = isApartment;
     }
 
-    public void setIsDefault(boolean isDefault) {
+    public void setDefault(boolean isDefault) {
         this.isDefault = isDefault;
     }
 }

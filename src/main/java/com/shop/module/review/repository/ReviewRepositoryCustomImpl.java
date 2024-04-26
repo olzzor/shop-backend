@@ -33,7 +33,7 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
                         QueryDslUtils.likeString(qReview.title, reviewListSearchRequest.getTitle()),
                         QueryDslUtils.likeString(qReview.content, reviewListSearchRequest.getContent()),
                         QueryDslUtils.likeString(qUser.email, reviewListSearchRequest.getUserEmail()),
-                        QueryDslUtils.eqBoolean(qReview.activateFlag, reviewListSearchRequest.getActivateFlag()),
+                        QueryDslUtils.eqBoolean(qReview.isActivate, reviewListSearchRequest.getIsActivate()),
                         QueryDslUtils.betweenDate(qReview.regDate, reviewListSearchRequest.getStartRegDate(), reviewListSearchRequest.getEndRegDate()),
                         QueryDslUtils.betweenDate(qReview.modDate, reviewListSearchRequest.getStartModDate(), reviewListSearchRequest.getEndModDate())
                 )

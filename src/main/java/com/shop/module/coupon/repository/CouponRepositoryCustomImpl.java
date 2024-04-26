@@ -1,26 +1,26 @@
 package com.shop.module.coupon.repository;
 
-import com.shop.module.coupon.dto.CouponListSearchRequest;
-import com.shop.module.coupon.entity.Coupon;
-import com.shop.module.coupon.entity.QCoupon;
-import com.shop.common.util.QueryDslUtils;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.shop.common.util.QueryDslUtils;
+import com.shop.module.coupon.dto.CouponListSearchRequest;
+import com.shop.module.coupon.entity.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class CouponRepositoryCustomImpl implements CouponRepositoryCustom {
     @PersistenceContext
-    private EntityManager em;
+    private EntityManager entityManager;
 
     @Override
     public Page<Coupon> findByCondition(CouponListSearchRequest couponListSearchRequest, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QCoupon qCoupon = QCoupon.coupon;
 
         JPAQuery<Coupon> query = queryFactory
@@ -40,9 +40,36 @@ public class CouponRepositoryCustomImpl implements CouponRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize());
 
-        List<Coupon> reviewList = query.fetch();
+        List<Coupon> couponList = query.fetch();
         long totalCount = query.fetchCount();
 
-        return new PageImpl<>(reviewList, pageable, totalCount);
+        return new PageImpl<>(couponList, pageable, totalCount);
+    }
+
+    @Override
+    public List<Coupon> findApplicableCouponsForCart(Long userId, List<Long> categoryIds, List<Long> productIds) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        QCoupon qCoupon = QCoupon.coupon;
+        QCouponCategory qCouponCategory = QCouponCategory.couponCategory;
+        QCouponProduct qCouponProduct = QCouponProduct.couponProduct;
+        QCouponUser qCouponUser = QCouponUser.couponUser;
+
+        JPAQuery<Coupon> query = queryFactory
+                .selectFrom(qCoupon)
+                .distinct()
+                .leftJoin(qCoupon.couponCategories, qCouponCategory)
+                .leftJoin(qCoupon.couponProducts, qCouponProduct)
+                .leftJoin(qCoupon.couponUsers, qCouponUser)
+                .where(
+                        qCoupon.status.eq(CouponStatus.ACTIVE),
+                        qCoupon.startValidDate.loe(LocalDateTime.now()),
+                        qCoupon.endValidDate.goe(LocalDateTime.now()),
+                        qCouponUser.user.id.eq(userId).or(qCouponUser.isNull()),
+                        qCouponCategory.category.id.in(categoryIds).or(qCouponProduct.product.id.in(productIds))
+                );
+
+        List<Coupon> couponList = query.fetch();
+
+        return couponList;
     }
 }

@@ -18,7 +18,7 @@ public class ReviewMapper {
                 .rating(review.getRating())
                 .title(review.getTitle())
                 .content(review.getContent())
-                .activateFlag(review.isActivateFlag())
+                .isActivate(review.isActivate())
                 .regDate(review.getRegDate())
                 .modDate(review.getModDate())
                 .build();

@@ -1,12 +1,11 @@
 package com.shop.module.review.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.shop.common.exception.UnauthorizedException;
-import com.shop.module.order.dto.OrderReviewOverviewResponse;
-import com.shop.module.order.entity.OrderDetail;
+import com.shop.common.util.JsonUtils;
 import com.shop.module.product.dto.ProductDto;
 import com.shop.module.product.dto.ProductSizeDto;
 import com.shop.module.product.entity.ProductSize;
-import com.shop.module.product.service.ProductImageService;
 import com.shop.module.product.service.ProductService;
 import com.shop.module.product.service.ProductSizeService;
 import com.shop.module.review.dto.*;
@@ -15,8 +14,6 @@ import com.shop.module.review.entity.ReviewImage;
 import com.shop.module.review.service.ReviewImageService;
 import com.shop.module.review.service.ReviewService;
 import com.shop.module.user.service.JwtService;
-import com.shop.common.util.JsonUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,13 +42,34 @@ public class ReviewController {
     private final ProductSizeService productSizeService;
 
     /**
-     * 단일 리뷰 취득
+     * 일반 사용자를 위한 단일 리뷰 취득 (토큰 검증 불필요)
+     *
+     * @param reviewId  리뷰 식별자
+     * @return 리뷰 상세 정보
      */
-    @GetMapping("/{reviewId}")
-    public ResponseEntity getReviewInfo(@PathVariable("reviewId") Long reviewId,
-                                        @CookieValue(value = "token", required = false) String accessToken,
-                                        @CookieValue(value = "refresh_token", required = false) String refreshToken,
-                                        HttpServletResponse res) {
+    @GetMapping("/public/{reviewId}")
+    public ResponseEntity getPublicReviewInfo(@PathVariable("reviewId") Long reviewId) {
+
+        Review review = reviewService.retrieveById(reviewId);
+        ReviewDto reviewDto = getDtoIncludeImages(review);
+
+        return new ResponseEntity<>(reviewDto, HttpStatus.OK);
+    }
+
+    /**
+     * 리뷰 작성자를 위한 단일 리뷰 취득 (토큰 검증 필요)
+     *
+     * @param reviewId      리뷰 식별자
+     * @param accessToken   접근 토큰
+     * @param refreshToken  새로고침 토큰
+     * @param res           응답 객체
+     * @return 리뷰 상세 정보
+     */
+    @GetMapping("/private/{reviewId}")
+    public ResponseEntity getPrivateReviewInfo(@PathVariable("reviewId") Long reviewId,
+                                               @CookieValue(value = "token", required = false) String accessToken,
+                                               @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                               HttpServletResponse res) {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
@@ -137,7 +155,7 @@ public class ReviewController {
                 .map(this::getDtoIncludeImagesAndProducts)
                 .collect(Collectors.toList());
 
-        OrderReviewOverviewResponse oroRes = OrderReviewOverviewResponse.builder()
+        ReviewOverviewResponse roRes = ReviewOverviewResponse.builder()
                 .reviews(reviewDtoList)
                 .totalPages(reviewPage.getTotalPages())
                 .totalReviews(reviewPage.getTotalElements())
@@ -145,7 +163,7 @@ public class ReviewController {
                 .countRating(countRating)
                 .build();
 
-        return new ResponseEntity<>(oroRes, HttpStatus.OK);
+        return new ResponseEntity<>(roRes, HttpStatus.OK);
     }
 
     @PostMapping("/write")
@@ -198,7 +216,8 @@ public class ReviewController {
         ReviewEditRequest reReq = Optional.ofNullable(JsonUtils.fromJson(noticeJson, ReviewEditRequest.class))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "입력 데이터 파싱에 실패했습니다."));
 
-        List<ReviewImageDto> existingImages = Optional.ofNullable(JsonUtils.fromJson(existingImagesJson, new TypeReference<List<ReviewImageDto>>() {}))
+        List<ReviewImageDto> existingImages = Optional.ofNullable(JsonUtils.fromJson(existingImagesJson, new TypeReference<List<ReviewImageDto>>() {
+                }))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "입력 이미지 데이터 파싱에 실패했습니다."));
 
         // 데이터 입력 체크
@@ -301,16 +320,12 @@ public class ReviewController {
         List<ReviewImage> reviewImageList = review.getReviewImages();
         List<ReviewImageDto> reviewImageDtoList = reviewImageService.convertToDtoList(reviewImageList);
 
-        List<OrderDetail> orderDetailList = review.getOrder().getOrderDetails();
         List<ProductSizeDto> productSizeDtoList = new ArrayList<>();
-
-        for (OrderDetail orderDetail : orderDetailList) {
-            ProductSize productSize = orderDetail.getProductSize();
-            ProductDto productDto = productService.getDtoWithMainImage(productSize.getProduct());
-            ProductSizeDto productSizeDto = productSizeService.convertToDto(productSize);
-            productSizeDto.setProduct(productDto);
-            productSizeDtoList.add(productSizeDto);
-        }
+        ProductSize productSize = review.getOrderDetail().getProductSize();
+        ProductDto productDto = productService.getDtoWithMainImage(productSize.getProduct());
+        ProductSizeDto productSizeDto = productSizeService.convertToDto(productSize);
+        productSizeDto.setProduct(productDto);
+        productSizeDtoList.add(productSizeDto);
 
         String userEmail = review.getUser().getEmail();
         String[] emailParts = userEmail.split("@");

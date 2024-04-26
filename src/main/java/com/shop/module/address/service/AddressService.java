@@ -117,8 +117,8 @@ public class AddressService {
         address.setCity(auReq.getCity().trim());
         address.setAddress1(auReq.getAddress1().trim());
         address.setAddress2(auReq.getAddress2().trim());
-        address.setIsApartment(auReq.isApartment());
-        address.setIsDefault(auReq.isDefault());
+        address.setApartment(auReq.isApartment());
+        address.setDefault(auReq.isDefault());
 
         addressRepository.save(address);
     }
@@ -144,7 +144,7 @@ public class AddressService {
         if (addressOptional.isPresent()) {
             // 해당 주소를 기본 주소에서 해제
             Address defaultAddress = addressOptional.get();
-            defaultAddress.setIsDefault(false);
+            defaultAddress.setDefault(false);
         }
     }
 }

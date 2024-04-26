@@ -138,7 +138,7 @@ public class UserController {
 
             LoginResponse loginResponse = LoginResponse.builder()
                     .id(user.getId())
-                    .role(user.isAdminFlag() ? "admin" : "user")
+                    .role(user.isAdmin() ? "admin" : "user")
                     .authProvider(user.getAuthProvider().getDescription())
                     .build();
 

@@ -11,14 +11,14 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
 
-    @Query("SELECT u FROM User u WHERE u.socialId = :socialId AND u.activateFlag = true")
+    @Query("SELECT u FROM User u WHERE u.socialId = :socialId AND u.isActivate = true")
     Optional<User> findBySocialIdWithActive(String socialId);
 
     Page<User> findAllByOrderByIdDesc(Pageable pageable);
 
-    @Query("SELECT u FROM User u WHERE u.email = :email AND u.authProvider = :authProvider AND u.activateFlag = true")
+    @Query("SELECT u FROM User u WHERE u.email = :email AND u.authProvider = :authProvider AND u.isActivate = true")
     Optional<User> findByEmailAndAuthProviderWithActive(String email, AuthProvider authProvider);
 
-    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email = :email AND u.authProvider = :authProvider AND u.activateFlag = true")
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email = :email AND u.authProvider = :authProvider AND u.isActivate = true")
     boolean existsByEmailAndAuthProviderWithActive(String email, AuthProvider authProvider);
 }

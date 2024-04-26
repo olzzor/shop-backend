@@ -1,14 +1,15 @@
 package com.shop.module.cart.controller;
 
+import com.shop.common.exception.UnauthorizedException;
 import com.shop.module.cart.dto.AddToCartRequest;
 import com.shop.module.cart.dto.CartProductDto;
 import com.shop.module.cart.dto.CartProductUpdateRequest;
 import com.shop.module.cart.entity.Cart;
 import com.shop.module.cart.service.CartProductService;
 import com.shop.module.cart.service.CartService;
-import com.shop.module.favorite.dto.FavoriteInfo;
-import com.shop.module.favorite.entity.Favorite;
-import com.shop.module.favorite.service.FavoriteService;
+import com.shop.module.wishlist.dto.WishlistInfo;
+import com.shop.module.wishlist.entity.Wishlist;
+import com.shop.module.wishlist.service.WishlistService;
 import com.shop.module.product.entity.ProductSize;
 import com.shop.module.product.service.ProductSizeService;
 import com.shop.module.user.service.JwtService;
@@ -31,7 +32,7 @@ public class CartController {
     private final CartService cartService;
     private final ProductSizeService productSizeService;
     private final CartProductService cartProductService;
-    private final FavoriteService favoriteService;
+    private final WishlistService wishlistService;
 
     /**
      * 장바구니 상품 취득
@@ -43,25 +44,24 @@ public class CartController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-            Long userId = jwtService.getId(token);
-
-            List<CartProductDto> cartProductDtoList = cartService.getProductsInCart(userId).stream()
-                    .map(cp -> {
-                        FavoriteInfo favoriteInfo = favoriteService.checkFavorite(userId, cp.getProductSize().getId());
-                        cp.setFavoriteInfo(favoriteInfo);
-                        return cp;
-                    }).collect(Collectors.toList());
-
-            return new ResponseEntity<>(cartProductDtoList, HttpStatus.OK);
-
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        Long userId = jwtService.getId(token);
+
+        List<CartProductDto> cartProductDtoList = cartService.getProductsInCart(userId).stream()
+                .map(cp -> {
+                    WishlistInfo wishlistInfo = wishlistService.checkWishlist(userId, cp.getProductSize().getId());
+                    cp.setWishlistInfo(wishlistInfo);
+                    return cp;
+                }).collect(Collectors.toList());
+
+        return new ResponseEntity<>(cartProductDtoList, HttpStatus.OK);
     }
 
     /**
-     * 장바구니 상품 추가
+     * 카트 상품 추가
      */
     @PostMapping("/add/by-product-size")
     public ResponseEntity addToCart(@RequestBody AddToCartRequest addToCartRequest,
@@ -84,10 +84,10 @@ public class CartController {
     }
 
     /**
-     * 장바구니 상품 추가
+     * 카트 상품 추가
      */
-    @PostMapping("/add/by-favorite/{favoriteId}")
-    public ResponseEntity addFavoriteToCart(@PathVariable("favoriteId") Long favoriteId,
+    @PostMapping("/add/by-wishlist/{wishlistId}")
+    public ResponseEntity addWishlistToCart(@PathVariable("wishlistId") Long wishlistId,
                                             @CookieValue(value = "token", required = false) String accessToken,
                                             @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                             HttpServletResponse res) {
@@ -95,8 +95,8 @@ public class CartController {
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            Favorite favorite = favoriteService.retrieveById(favoriteId);
-            cartService.addFavoriteToCart(jwtService.getId(token), favorite);
+            Wishlist wishlist = wishlistService.retrieveById(wishlistId);
+            cartService.addWishlistToCart(jwtService.getId(token), wishlist);
 
             return new ResponseEntity<>(HttpStatus.OK);
 
@@ -126,34 +126,54 @@ public class CartController {
         }
     }
 
+//    /**
+//     * 장바구니 상품 적용 쿠폰 변경
+//     */
+//    @PostMapping("/update/coupon")
+//    public ResponseEntity<?> updateCoupon(@RequestBody CartProductUpdateRequest cartProductUpdateRequest,
+//                                          @CookieValue(value = "token", required = false) String accessToken,
+//                                          @CookieValue(value = "refresh_token", required = false) String refreshToken,
+//                                          HttpServletResponse res) {
+//
+//        String token = jwtService.getToken(accessToken, refreshToken, res);
+//
+//        if (token != null) {
+//            cartProductService.updateProductCoupon(cartProductUpdateRequest.getId(), cartProductUpdateRequest.getCouponId());
+//
+//            return new ResponseEntity<>(HttpStatus.OK);
+//        } else {
+//            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+//        }
+//    }
+
     /**
      * 장바구니 상품 적용 쿠폰 변경
      */
-    @PostMapping("/update/coupon")
-    public ResponseEntity<?> updateCoupon(@RequestBody CartProductUpdateRequest cartProductUpdateRequest,
+    @PostMapping(value = "/update/coupon/{selectedCouponId}")
+    public ResponseEntity<?> updateCoupon(@PathVariable("selectedCouponId") Long couponId,
                                           @CookieValue(value = "token", required = false) String accessToken,
                                           @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                           HttpServletResponse res) {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
-        if (token != null) {
-            cartProductService.updateProductCoupon(cartProductUpdateRequest.getId(), cartProductUpdateRequest.getCouponId());
-
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (token == null) {
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        cartProductService.updateProductCoupon(jwtService.getId(token), couponId);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
-     * 장바구니 상품 삭제
+     * 카트 상품 삭제
      */
     @DeleteMapping("/delete/{cartProductId}")
-    public ResponseEntity deleteCart(@PathVariable("cartProductId") Long cartProductId,
-                                     @CookieValue(value = "token", required = false) String accessToken,
-                                     @CookieValue(value = "refresh_token", required = false) String refreshToken,
-                                     HttpServletResponse res) {
+    public ResponseEntity deleteFromCart(@PathVariable("cartProductId") Long cartProductId,
+                                         @CookieValue(value = "token", required = false) String accessToken,
+                                         @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                         HttpServletResponse res) {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 

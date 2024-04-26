@@ -20,8 +20,8 @@ public class UserMapper {
                 .password(user.getPassword())
                 .phoneNumber(user.getPhoneNumber())
                 .authProvider(user.getAuthProvider())
-                .adminFlag(user.isAdminFlag())
-                .activateFlag(user.isActivateFlag())
+                .isAdmin(user.isAdmin())
+                .isActivate(user.isActivate())
                 .regDate(user.getRegDate())
                 .modDate(user.getModDate())
                 .build();

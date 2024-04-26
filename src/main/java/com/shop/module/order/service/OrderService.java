@@ -88,25 +88,34 @@ public class OrderService {
     public OrderDto getDto(Order order) {
         OrderDto orderDto = orderMapper.mapToDto(order);
 
-        Review review = order.getReview();
-        if (review != null) {
-            orderDto.setReview(reviewMapper.mapToDto(review));
-        }
+        // 20240416 OrderDetial로 이동
+//        Review review = order.getReview();
+//        if (review != null) {
+//            orderDto.setReview(reviewMapper.mapToDto(review));
+//        }
 
         List<OrderDetailDto> orderDetailDtoList = order.getOrderDetails().stream()
                 .map(orderDetail -> {
                     OrderDetailDto orderDetailDto = orderDetailMapper.mapToDto(orderDetail);
 
+                    // 상품 정보 설정
                     Product product = orderDetail.getProduct();
                     ProductImage productImage = product.getProductImages().get(0);
                     ProductDto productDto = productMapper.mapToDto(product);
                     ProductImageDto productImageDto = productImageMapper.mapToDto(productImage);
-                    // ProductDto의 productImages 리스트에 첫 번째 원소로 설정
-                    productDto.setProductImages(Collections.singletonList(productImageDto));
-
+                    productDto.setProductImages(Collections.singletonList(productImageDto)); // ProductDto의 productImages 리스트에 첫 번째 원소로 설정
                     orderDetailDto.setProduct(productDto);
+
+                    // 상품 사이즈 정보 설정
                     orderDetailDto.setProductSize(productSizeMapper.mapToDto(orderDetail.getProductSize()));
+
+                    // 배송 정보 설정
                     orderDetailDto.setShipment(shipmentMapper.mapToDto(orderDetail.getShipment()));
+
+                    // 리뷰 정보가 존재하는 경우에만 리뷰 정보를 설정 20240416 추가
+                    if (orderDetail.getReview() != null) {
+                        orderDetailDto.setReview(reviewMapper.mapToDto(orderDetail.getReview()));
+                    }
 
                     return orderDetailDto;
                 })
@@ -247,7 +256,7 @@ public class OrderService {
                 .paymentMethod(payment.getCardName())
                 .paymentAmount(payment.getAmount().intValue())
                 .cardNumber(payment.getCardNumber())
-                .status(OrderStatus.ORDER_RECEIVED)
+                .status(OrderStatus.PAYMENT_COMPLETED) // 20240415 status 수정
                 .build();
 
         return orderRepository.save(order);
@@ -271,6 +280,8 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    /**
+     * 20240415 주문 확정 기능 삭제
     public String confirmOrder(Order order) {
         OrderStatus orderStatus = order.getStatus();
         String message = "";
@@ -297,20 +308,19 @@ public class OrderService {
 
         return message;
     }
+    */
 
     public String cancelOrder(Order order) {
         OrderStatus orderStatus = order.getStatus();
         String message = "";
 
-        if (OrderStatus.ORDER_RECEIVED.equals(orderStatus) || OrderStatus.ORDER_CONFIRMED.equals(orderStatus)) {
+        if (OrderStatus.PAYMENT_PENDING.equals(orderStatus) || OrderStatus.PAYMENT_COMPLETED.equals(orderStatus)) {
             updateOrderStatus(order, OrderStatus.CANCEL_REQUESTED);
             message = "주문 취소가 접수되었습니다.";
 
-        } else if (OrderStatus.ORDER_FINALIZED.equals(orderStatus)) {
-            message = "이미 주문이 확정되어 주문을 취소할 수 없습니다.";
-
-        } else if (OrderStatus.SHIPMENT_PREPARING.equals(orderStatus)) {
-            message = "배송 준비 중에는 주문을 취소할 수 없습니다.";
+//         TODO ShipmentStatus 체크 처리 추가할 것
+//        } else if (OrderStatus.SHIPMENT_PREPARING.equals(orderStatus)) {
+//            message = "배송 준비 중에는 주문을 취소할 수 없습니다.";
 
         } else if (OrderStatus.CANCEL_REQUESTED.equals(orderStatus)) {
             message = "이미 주문 취소가 접수되었습니다. 잠시 기다려주세요.";

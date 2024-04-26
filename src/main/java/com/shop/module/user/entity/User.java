@@ -5,7 +5,7 @@ import com.shop.module.cart.entity.Cart;
 import com.shop.module.contact.entity.Contact;
 import com.shop.module.coupon.entity.CouponUser;
 import com.shop.common.entity.BaseTimeEntity;
-import com.shop.module.favorite.entity.Favorite;
+import com.shop.module.wishlist.entity.Wishlist;
 import com.shop.module.order.entity.Order;
 import com.shop.module.recentlyviewedproduct.entity.RecentlyViewedProduct;
 import com.shop.module.review.entity.Review;
@@ -46,10 +46,10 @@ public class User extends BaseTimeEntity {
     private String socialId;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean adminFlag = false;
+    private boolean isAdmin = false;
 
     @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean activateFlag = true;
+    private boolean isActivate = true;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private Cart cart;
@@ -60,7 +60,7 @@ public class User extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "user")
     @JsonBackReference
-    private List<Favorite> favorites = new ArrayList<>();
+    private List<Wishlist> wishlist = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
     @JsonBackReference
@@ -85,15 +85,15 @@ public class User extends BaseTimeEntity {
     // 빌더 패턴을 사용하는 생성자
     @Builder
     public User(String email, String password, String name, String phoneNumber,
-                AuthProvider authProvider, String socialId, Boolean adminFlag, Boolean activateFlag) {
+                AuthProvider authProvider, String socialId, Boolean isAdmin, Boolean isActivate) {
         this.email = email;
         this.password = password;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.authProvider = authProvider;
         this.socialId = socialId;
-        this.adminFlag = (adminFlag == null) ? false : adminFlag; // 기본값 설정
-        this.activateFlag = (activateFlag == null) ? true : activateFlag; // 기본값 설정
+        this.isAdmin = (isAdmin == null) ? false : isAdmin; // 기본값 설정
+        this.isActivate = (isActivate == null) ? true : isActivate; // 기본값 설정
         // 관계형 필드는 생성자에서 초기화하지 않음
     }
 
@@ -122,11 +122,11 @@ public class User extends BaseTimeEntity {
         this.socialId = socialId;
     }
 
-    public void setAdminFlag(boolean adminFlag) {
-        this.adminFlag = adminFlag;
+    public void setAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 
-    public void setActivateFlag(boolean activateFlag) {
-        this.activateFlag = activateFlag;
+    public void setActivate(boolean isActivate) {
+        this.isActivate = isActivate;
     }
 }

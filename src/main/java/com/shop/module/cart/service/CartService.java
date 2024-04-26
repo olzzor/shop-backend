@@ -7,7 +7,7 @@ import com.shop.module.cart.entity.Cart;
 import com.shop.module.cart.entity.CartProduct;
 import com.shop.module.cart.repository.CartProductRepository;
 import com.shop.module.cart.repository.CartRepository;
-import com.shop.module.favorite.entity.Favorite;
+import com.shop.module.wishlist.entity.Wishlist;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.entity.ProductSize;
 import com.shop.module.product.entity.ProductStatus;
@@ -42,15 +42,15 @@ public class CartService {
                 .orElseThrow(() -> new NotFoundException("cartNotFound", "장바구니 정보를 찾을 수 없습니다."));
 
         List<CartProduct> cartProductList = cart.getCartProducts();
-        List<CartProductDto> cartProductDtoList = cartProductService.getCartProductDtoList(cartProductList);
+        List<CartProductDto> cartProductDtoList = cartProductService.getDtoList(cartProductList);
 
         return cartProductDtoList;
     }
 
     @Transactional
-    public void addFavoriteToCart(Long userId, Favorite favorite) {
-        Product product = favorite.getProduct();
-        ProductSize productSize = favorite.getProductSize();
+    public void addWishlistToCart(Long userId, Wishlist wishlist) {
+        Product product = wishlist.getProduct();
+        ProductSize productSize = wishlist.getProductSize();
 
         if (!ProductStatus.ON_SALE.equals(product.getStatus())) {
             // 해당 상품이 판매 중이지 않은 경우{
@@ -74,7 +74,7 @@ public class CartService {
 
                 cart = Cart.builder()
                         .user(user)
-                        .activateFlag(true)
+                        .isActivate(true)
                         .build();
 
                 cartRepository.save(cart);
@@ -130,7 +130,7 @@ public class CartService {
 
                 cart = Cart.builder()
                         .user(user)
-                        .activateFlag(true)
+                        .isActivate(true)
                         .build();
 
                 cartRepository.save(cart);
@@ -167,7 +167,7 @@ public class CartService {
 
         Cart cart = Cart.builder()
                 .user(user)
-                .activateFlag(true)
+                .isActivate(true)
                 .build();
 
         cartRepository.save(cart);
@@ -176,7 +176,7 @@ public class CartService {
     @Transactional
     public void deactivateCart(Long userId) {
         Cart cart = retrieveByUserId(userId);
-        cart.setActivateFlag(false);
+        cart.setActivate(false);
         cartRepository.save(cart);
     }
 }

@@ -2,8 +2,8 @@ package com.shop.module.review.service;
 
 import com.shop.common.exception.NotFoundException;
 import com.shop.common.exception.ValidationException;
-import com.shop.module.order.entity.Order;
-import com.shop.module.order.service.OrderService;
+import com.shop.module.order.entity.OrderDetail;
+import com.shop.module.order.service.OrderDetailService;
 import com.shop.module.review.dto.*;
 import com.shop.module.review.entity.Review;
 import com.shop.module.review.entity.ReviewImage;
@@ -32,7 +32,7 @@ public class ReviewService {
 
     private final ReviewImageService reviewImageService;
     private final UserService userService;
-    private final OrderService orderService;
+    private final OrderDetailService orderDetailService;
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
     private final UserMapper userMapper;
@@ -53,7 +53,7 @@ public class ReviewService {
     }
 
     public Page<Review> retrieveAllActivated(Pageable pageable) {
-        return reviewRepository.findAllByActivateFlag(true, pageable);
+        return reviewRepository.findAllByIsActivate(true, pageable);
     }
 
     public Page<Review> retrieveAllPaged(Pageable pageable) {
@@ -121,35 +121,35 @@ public class ReviewService {
 //        return contactListResponse;
 //    }
 
-    public void checkInput(ReviewEditRequest request) {
+    public void checkInput(ReviewEditRequest reReq) {
 //        List<String> errorMessages = new ArrayList<>();
 
         // reviewId 체크
-        if (request.getReviewId() == null || !isExistingById(request.getReviewId())) {
+        if (reReq.getReviewId() == null || !isExistingById(reReq.getReviewId())) {
             throw new ValidationException("reviewIdInvalid", "수정 권한이 없습니다.");
 //            errorMessages.add("Invalid reviewId");
         }
 
         // rating 체크
-        if (request.getRating() < 1 || request.getRating() > 5) {
+        if (reReq.getRating() < 1 || reReq.getRating() > 5) {
             throw new ValidationException("ratingMissing", "평점을 선택해주세요.");
 //            errorMessages.add("Rating should be between 1 and 5");
         }
 
         // title 체크
-        if (request.getTitle() == null || StringUtils.isEmpty(request.getTitle().trim())) {
+        if (reReq.getTitle() == null || StringUtils.isEmpty(reReq.getTitle().trim())) {
             throw new ValidationException("titleMissing", "제목을 입력해주세요.");
 //            errorMessages.add("Title is missing");
-        } else if (request.getTitle().length() > MAX_TITLE_LENGTH) {
+        } else if (reReq.getTitle().length() > MAX_TITLE_LENGTH) {
             throw new ValidationException("titleTooLong", "제목을 100자 이내로 입력해 주세요.");
 //            errorMessages.add("Title should be within 100 characters");
         }
 
         // content 체크
-        if (request.getContent() == null || StringUtils.isEmpty(request.getContent().trim())) {
+        if (reReq.getContent() == null || StringUtils.isEmpty(reReq.getContent().trim())) {
             throw new ValidationException("contentMissing", "내용을 입력해주세요.");
 //            errorMessages.add("Content is missing");
-        } else if (request.getContent().length() > MAX_CONTENT_LENGTH) {
+        } else if (reReq.getContent().length() > MAX_CONTENT_LENGTH) {
             throw new ValidationException("contentTooLong", "내용을 1000자 이내로 입력해 주세요.");
 //            errorMessages.add("Content should be within 1000 characters");
         }
@@ -164,29 +164,29 @@ public class ReviewService {
 //        return true;
     }
 
-    public void checkInput(ReviewWriteRequest request) {
+    public void checkInput(ReviewWriteRequest rwReq) {
 
-        // orderId 체크
-        if (request.getOrderId() == null || !orderService.isExistingById(request.getOrderId())) {
-            throw new ValidationException("orderIdInvalid", "수정 권한이 없습니다.");
+        // orderDetailId 체크
+        if (rwReq.getOrderDetailId() == null || !orderDetailService.isExistingById(rwReq.getOrderDetailId())) {
+            throw new ValidationException("orderIdInvalid", "작성 권한이 없습니다.");
         }
 
         // rating 체크
-        if (request.getRating() < 1 || request.getRating() > 5) {
+        if (rwReq.getRating() < 1 || rwReq.getRating() > 5) {
             throw new ValidationException("ratingMissing", "평점을 선택해주세요.");
         }
 
         // title 체크
-        if (request.getTitle() == null || StringUtils.isEmpty(request.getTitle().trim())) {
+        if (rwReq.getTitle() == null || StringUtils.isEmpty(rwReq.getTitle().trim())) {
             throw new ValidationException("titleMissing", "제목을 입력해주세요.");
-        } else if (request.getTitle().length() > MAX_TITLE_LENGTH) {
+        } else if (rwReq.getTitle().length() > MAX_TITLE_LENGTH) {
             throw new ValidationException("titleTooLong", "제목을 100자 이내로 입력해 주세요.");
         }
 
         // content 체크
-        if (request.getContent() == null || StringUtils.isEmpty(request.getContent().trim())) {
+        if (rwReq.getContent() == null || StringUtils.isEmpty(rwReq.getContent().trim())) {
             throw new ValidationException("contentMissing", "내용을 입력해주세요.");
-        } else if (request.getContent().length() > MAX_CONTENT_LENGTH) {
+        } else if (rwReq.getContent().length() > MAX_CONTENT_LENGTH) {
             throw new ValidationException("contentTooLong", "내용을 1000자 이내로 입력해 주세요.");
         }
     }
@@ -195,15 +195,15 @@ public class ReviewService {
     public Review insertReview(Long userId, ReviewWriteRequest request) {
 
         User user = userService.retrieveById(userId);
-        Order order = orderService.retrieveById(request.getOrderId());
+        OrderDetail orderDetail = orderDetailService.retrieveById(request.getOrderDetailId());
 
         Review review = Review.builder()
                 .user(user)
-                .order(order)
+                .orderDetail(orderDetail)
                 .rating(request.getRating())
                 .title(request.getTitle())
                 .content(request.getContent())
-                .activateFlag(true)
+                .isActivate(true)
                 .build();
 
         reviewRepository.save(review);
@@ -276,9 +276,9 @@ public class ReviewService {
     private boolean updateReviewDetails(Review review, ReviewDto reviewDto) {
         boolean isModified = false;
 
-        // activateFlag 상태 변경이 있을 경우 업데이트
-        if (reviewDto.isActivateFlag() != review.isActivateFlag()) {
-            review.setActivateFlag(reviewDto.isActivateFlag());
+        // isActivate 상태 변경이 있을 경우 업데이트
+        if (reviewDto.isActivate() != review.isActivate()) {
+            review.setActivate(reviewDto.isActivate());
             isModified = true; // 상태가 변경되었다면 수정됨으로 표시
         }
 

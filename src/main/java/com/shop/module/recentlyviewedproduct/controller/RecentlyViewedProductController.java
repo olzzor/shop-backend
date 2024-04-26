@@ -41,7 +41,7 @@ public class RecentlyViewedProductController {
      * 필요에 따라 오래된 조회 기록은 삭제
      */
     @PostMapping("/record/{productId}")
-    public ResponseEntity recordView(@PathVariable("productId") Long productId,
+    public ResponseEntity<?> recordView(@PathVariable("productId") Long productId,
                                      @CookieValue(value = "token", required = false) String accessToken,
                                      @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                      HttpServletResponse res) {
@@ -71,7 +71,7 @@ public class RecentlyViewedProductController {
      *
      */
     @GetMapping("/get-by-database")
-    public ResponseEntity getByDataBase(@CookieValue(value = "token", required = false) String accessToken,
+    public ResponseEntity<?> getByDataBase(@CookieValue(value = "token", required = false) String accessToken,
                                         @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                         HttpServletResponse res,
                                         Pageable pageable) {
@@ -85,7 +85,7 @@ public class RecentlyViewedProductController {
             Long userId = jwtService.getId(token);
 
             Page<RecentlyViewedProduct> rvpPage = recentlyViewedProductService.getRecentlyViewedProductPage(userId, pageable);
-            List<RecentlyViewedProductDto> rvpDtoList = recentlyViewedProductService.getRecentlyViewedProductDtoList(rvpPage.getContent());
+            List<RecentlyViewedProductDto> rvpDtoList = recentlyViewedProductService.getRecentlyViewedProductDtoList(rvpPage.getContent()); // TODO null 대응
 
             RecentlyViewedProductListResponse rvpListRes = RecentlyViewedProductListResponse.builder()
                     .recentlyViewedProducts(rvpDtoList)
@@ -101,7 +101,7 @@ public class RecentlyViewedProductController {
     }
 
     @PostMapping("/get-by-localstorage")
-    public ResponseEntity getByLocalStorage(@RequestBody List<RecentlyViewedProductRequest> recentlyViewedProductRequestList) {
+    public ResponseEntity<?> getByLocalStorage(@RequestBody List<RecentlyViewedProductRequest> recentlyViewedProductRequestList) {
 
         // 상품 아이디 목록 추출
         List<Long> productIds = recentlyViewedProductRequestList.stream()
@@ -138,7 +138,7 @@ public class RecentlyViewedProductController {
      * 로컬 스토리지의 recentlyViewedProducts 데이터를 데이터베이스에 동기화하는 API
      */
     @PostMapping("/sync")
-    public ResponseEntity syncRecentlyViewedProducts(@RequestBody List<RecentlyViewedProductRequest> recentlyViewedProductRequestList,
+    public ResponseEntity<?> syncRecentlyViewedProducts(@RequestBody List<RecentlyViewedProductRequest> recentlyViewedProductRequestList,
                                                      @CookieValue(value = "token", required = false) String accessToken,
                                                      @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                                      HttpServletResponse res) {

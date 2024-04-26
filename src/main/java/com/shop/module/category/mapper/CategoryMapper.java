@@ -16,7 +16,9 @@ public class CategoryMapper {
         return CategoryDto.builder()
                 .id(category.getId())
                 .code(category.getCode())
+                .codeRef(category.getCodeRef())
                 .name(category.getName())
+                .slug(category.getSlug())
                 .build();
     }
 
@@ -27,7 +29,9 @@ public class CategoryMapper {
     public Category mapToEntity(CategoryDto categoryDto) {
         Category category = Category.builder()
                 .code(categoryDto.getCode())
+                .codeRef(categoryDto.getCodeRef())
                 .name(categoryDto.getName())
+                .slug(categoryDto.getSlug())
                 .build();
         return category;
     }

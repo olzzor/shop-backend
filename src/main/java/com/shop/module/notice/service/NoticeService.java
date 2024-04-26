@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -164,30 +165,10 @@ public class NoticeService {
     }
 
     public void checkInput(NoticeDto noticeDto) {
-
-        // type 체크
-        if (noticeDto.getType() == null) {
-            throw new ValidationException("typeMissing", "유형을 선택해주세요.");
-        }
-
-        // title 체크
-        if (StringUtils.isBlank(noticeDto.getTitle())) {
-            throw new ValidationException("titleMissing", "제목을 입력해주세요.");
-        } else if (noticeDto.getTitle().trim().length() > MAX_TITLE_LENGTH) {
-            throw new ValidationException("titleTooLong", "제목은 50자 이하로 입력해주세요.");
-        }
-
-        // content 체크
-        if (StringUtils.isBlank(noticeDto.getContent())) {
-            throw new ValidationException("contentMissing", "내용을 입력해주세요.");
-        } else if (noticeDto.getContent().trim().length() > MAX_CONTENT_LENGTH) {
-            throw new ValidationException("contentTooLong", "내용은 1000자 이하로 입력해주세요.");
-        }
-
-        // status 체크
-        if (noticeDto.getStatus() == null) {
-            throw new ValidationException("statusMissing", "공지 상태를 선택해주세요.");
-        }
+        validateType(noticeDto.getType());          // type 체크
+        validateTitle(noticeDto.getTitle());        // title 체크
+        validateContent(noticeDto.getContent());    // content 체크
+        validateStatus(noticeDto.getStatus());      // status 체크
     }
 
     @Transactional
@@ -208,7 +189,7 @@ public class NoticeService {
     }
 
     /**
-     * 주어진 공지 정보에 대해 업데이트를 수행
+     * 주어진 공지 내용에 대해 업데이트를 수행
      * 변경이 감지된 경우에만 데이터베이스에 저장
      *
      * @param notice    업데이트할 공지 정보 엔티티
@@ -218,7 +199,12 @@ public class NoticeService {
     public void updateNoticeContent(Notice notice, NoticeDto noticeDto) {
         boolean isModified = false;
 
-        isModified |= updateIfDifferent(notice.getContent(), noticeDto.getContent(), notice::setContent);
+//        isModified |= updateIfDifferent(notice.getContent(), noticeDto.getContent(), notice::setContent);
+        if (!Objects.equals(notice.getContent(), noticeDto.getContent().trim())) {
+            validateContent(noticeDto.getContent());
+            notice.setContent(noticeDto.getContent());
+            isModified = true;
+        }
 
         // 변경 사항을 감지하여 엔티티를 저장
         if (isModified) {
@@ -274,17 +260,26 @@ public class NoticeService {
     private boolean updateNoticeDetails(Notice notice, NoticeDto noticeDto) {
         boolean isModified = false;
 
-        // 공지 제목, 내용의 변경 사항을 검사하고 업데이트
-        isModified |= updateIfDifferent(notice.getTitle(), noticeDto.getTitle(), notice::setTitle);
+//        // 공지 제목의 변경 사항을 검사하고 업데이트
+//        isModified |= updateIfDifferent(notice.getTitle(), noticeDto.getTitle(), notice::setTitle);
 
-        // 공지 구분 변경 확인 및 업데이트
+        // 제목 변경 확인 및 검증, 업데이트
+        if (!Objects.equals(notice.getTitle(), noticeDto.getTitle().trim())) {
+            validateTitle(noticeDto.getTitle());
+            notice.setTitle(noticeDto.getTitle());
+            isModified = true;
+        }
+
+        // 구분 변경 확인 및 검증, 업데이트
         if (notice.getType() != noticeDto.getType()) {
+            validateType(noticeDto.getType());
             notice.setType(noticeDto.getType());
             isModified = true;
         }
 
-        // 공지 상태 변경 확인 및 업데이트
+        // 상태 변경 확인 및 검증, 업데이트
         if (notice.getStatus() != noticeDto.getStatus()) {
+            validateStatus(noticeDto.getStatus());
             notice.setStatus(noticeDto.getStatus());
             isModified = true;
         }
@@ -319,5 +314,45 @@ public class NoticeService {
             return true; // 변경이 있었으므로 true를 반환
         }
         return false; // 값이 변경되지 않았으므로 false를 반환
+    }
+
+    /**
+     * type 필드 검증
+     */
+    private void validateType(NoticeType type) {
+        if (type == null) {
+            throw new ValidationException("typeMissing", "유형을 선택해주세요.");
+        }
+    }
+
+    /**
+     * title 필드 검증
+     */
+    private void validateTitle(String title) {
+        if (StringUtils.isBlank(title)) {
+            throw new ValidationException("titleMissing", "제목을 입력해주세요.");
+        } else if (title.trim().length() > MAX_TITLE_LENGTH) {
+            throw new ValidationException("titleTooLong", "제목은 " + MAX_TITLE_LENGTH + "자 이하로 입력해주세요.");
+        }
+    }
+
+    /**
+     * content 필드 검증
+     */
+    private void validateContent(String content) {
+        if (StringUtils.isBlank(content)) {
+            throw new ValidationException("contentMissing", "내용을 입력해주세요.");
+        } else if (content.trim().length() > MAX_CONTENT_LENGTH) {
+            throw new ValidationException("contentTooLong", "내용은 " + String.format("%,d", MAX_CONTENT_LENGTH) + "자 이하로 입력해주세요.");
+        }
+    }
+
+    /**
+     * status 필드 검증
+     */
+    private void validateStatus(NoticeStatus status) {
+        if (status == null) {
+            throw new ValidationException("statusMissing", "공지 상태를 선택해주세요.");
+        }
     }
 }

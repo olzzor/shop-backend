@@ -1,12 +1,11 @@
-package com.shop.module.favorite.controller;
+package com.shop.module.wishlist.controller;
 
-import com.shop.module.favorite.service.FavoriteService;
-import com.shop.module.favorite.dto.FavoriteInfo;
-import com.shop.module.favorite.dto.FavoriteDto;
-import com.shop.module.favorite.entity.Favorite;
+import com.shop.module.wishlist.entity.Wishlist;
+import com.shop.module.wishlist.service.WishlistService;
+import com.shop.module.wishlist.dto.WishlistInfo;
+import com.shop.module.wishlist.dto.WishlistDto;
 import com.shop.module.product.entity.ProductSize;
 import com.shop.module.user.entity.User;
-import com.shop.module.product.service.ProductService;
 import com.shop.module.product.service.ProductSizeService;
 import com.shop.module.user.service.JwtService;
 import com.shop.module.user.service.UserService;
@@ -21,20 +20,19 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/favorite")
-public class FavoriteController {
+@RequestMapping("/api/wishlist")
+public class WishlistController {
 
     private final JwtService jwtService;
     private final UserService userService;
-    private final FavoriteService favoriteService;
-    private final ProductService productService;
+    private final WishlistService wishlistService;
     private final ProductSizeService productSizeService;
 
     /**
-     * 관심 상품 체크
+     * 위시리스트 체크
      */
     @GetMapping("/check/{productSizeId}")
-    public ResponseEntity<?> checkFavorite(@PathVariable("productSizeId") Long productSizeId,
+    public ResponseEntity<?> checkWishlist(@PathVariable("productSizeId") Long productSizeId,
                                            @CookieValue(value = "token", required = false) String accessToken,
                                            @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                            HttpServletResponse res) {
@@ -42,7 +40,7 @@ public class FavoriteController {
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            FavoriteInfo fcRes = favoriteService.checkFavorite(jwtService.getId(token), productSizeId);
+            WishlistInfo fcRes = wishlistService.checkWishlist(jwtService.getId(token), productSizeId);
             return new ResponseEntity<>(fcRes, HttpStatus.OK);
 
         } else {
@@ -51,21 +49,21 @@ public class FavoriteController {
     }
 
     /**
-     * 관심 상품 취득
+     * 위시리스트 정보 취득
      */
     @GetMapping("/get")
-    public ResponseEntity getFavorites(@CookieValue(value = "token", required = false) String accessToken,
+    public ResponseEntity getWishlists(@CookieValue(value = "token", required = false) String accessToken,
                                        @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                        HttpServletResponse res) {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            // 유저 아이디로 관심 상품 정보 취득
-            List<Favorite> favoriteList = favoriteService.getFavoriteList(jwtService.getId(token));
-            List<FavoriteDto> favoriteDtoList = favoriteService.getFavoriteDtoList(favoriteList);
+            // 유저 아이디로 위시리스트 정보 취득
+            List<Wishlist> wishlistList = wishlistService.getWishlistList(jwtService.getId(token));
+            List<WishlistDto> wishlistDtoList = wishlistService.getWishlistDtoList(wishlistList);
 
-            return new ResponseEntity<>(favoriteDtoList, HttpStatus.OK);
+            return new ResponseEntity<>(wishlistDtoList, HttpStatus.OK);
 
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
@@ -73,13 +71,13 @@ public class FavoriteController {
     }
 
     /**
-     * 관심 상품 추가
+     * 위시리스트 추가
      */
     @PostMapping("/add/{productSizeId}")
-    public ResponseEntity addFavorite(@PathVariable("productSizeId") Long productSizeId,
-                                      @CookieValue(value = "token", required = false) String accessToken,
-                                      @CookieValue(value = "refresh_token", required = false) String refreshToken,
-                                      HttpServletResponse res) {
+    public ResponseEntity addToWishlist(@PathVariable("productSizeId") Long productSizeId,
+                                        @CookieValue(value = "token", required = false) String accessToken,
+                                        @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                        HttpServletResponse res) {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
@@ -87,7 +85,7 @@ public class FavoriteController {
             User user = userService.retrieveById(jwtService.getId(token));
             ProductSize productSize = productSizeService.retrieveById(productSizeId);
 
-            favoriteService.addFavorite(user, productSize);
+            wishlistService.addToWishlist(user, productSize);
             return new ResponseEntity<>(HttpStatus.OK);
 
         } else {
@@ -96,18 +94,18 @@ public class FavoriteController {
     }
 
     /**
-     * 관심 상품 단일 삭제
+     * 위시리스트 단일 삭제
      */
-    @DeleteMapping("/delete/{favoriteId}")
-    public ResponseEntity deleteFavorite(@PathVariable("favoriteId") Long favoriteId,
-                                         @CookieValue(value = "token", required = false) String accessToken,
-                                         @CookieValue(value = "refresh_token", required = false) String refreshToken,
-                                         HttpServletResponse res) {
+    @DeleteMapping("/delete/{wishlistId}")
+    public ResponseEntity deleteFromWishlist(@PathVariable("wishlistId") Long wishlistId,
+                                             @CookieValue(value = "token", required = false) String accessToken,
+                                             @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                             HttpServletResponse res) {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            favoriteService.deleteById(favoriteId);
+            wishlistService.deleteById(wishlistId);
             return new ResponseEntity<>(HttpStatus.OK);
 
         } else {
@@ -116,17 +114,17 @@ public class FavoriteController {
     }
 
     /**
-     * 관심 상품 전체 삭제
+     * 위시리스트 전체 삭제
      */
     @DeleteMapping("/delete/all")
-    public ResponseEntity deleteFavoriteAll(@CookieValue(value = "token", required = false) String accessToken,
+    public ResponseEntity deleteUserWishlist(@CookieValue(value = "token", required = false) String accessToken,
                                             @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                             HttpServletResponse res) {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            favoriteService.deleteAllByUserId(jwtService.getId(token));
+            wishlistService.deleteAllByUserId(jwtService.getId(token));
             return new ResponseEntity<>(HttpStatus.OK);
 
         } else {

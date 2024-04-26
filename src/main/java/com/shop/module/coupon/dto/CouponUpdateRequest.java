@@ -51,4 +51,3 @@ public class CouponUpdateRequest {
         this.status = status;
     }
 }
-

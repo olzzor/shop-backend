@@ -14,16 +14,20 @@ import java.util.List;
 public class CategoryDto {
     private Long id;
     private String code;
+    private String codeRef;
     private String name;
+    private String slug;
     private List<ProductDto> products;
     private List<CouponDto> coupons;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public CategoryDto(Long id, String code, String name) {
+    public CategoryDto(Long id, String code, String codeRef, String name, String slug) {
         this.id = id;
         this.code = code;
+        this.codeRef = codeRef;
         this.name = name;
+        this.name = slug;
     }
 
     // 설정자 메서드
@@ -35,8 +39,16 @@ public class CategoryDto {
         this.code = code;
     }
 
+    public void setCodeRef(String codeRef) {
+        this.codeRef = codeRef;
+    }
+
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 
     public void setProducts(List<ProductDto> products) {

@@ -85,7 +85,7 @@ public class ContactService {
                 .orElseThrow(() -> new NotFoundException("userNotFound", "사용자 정보를 찾을 수 없습니다."));
 
         // 해당 Contact의 User ID와 현재 요청한 유저의 ID가 일치하는지 확인 (무결성 체크) ※ 관리자의 경우, 무조건 접근 가능
-        if (!user.isAdminFlag() && !contactList.get(0).getUser().getId().equals(userId)) {
+        if (!user.isAdmin() && !contactList.get(0).getUser().getId().equals(userId)) {
             throw new UnauthorizedException("contactUnauthorizedAccess", "이 문의 내역에 대한 접근 권한이 없습니다.");
         }
 

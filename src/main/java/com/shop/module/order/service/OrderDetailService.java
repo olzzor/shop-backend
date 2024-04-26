@@ -70,7 +70,7 @@ public class OrderDetailService {
         ProductDto productDto = productService.getDtoWithMainImage(orderDetail.getProduct());
         orderDetailDto.setProduct(productDto);
 
-        ShipmentDto shipmentDto = shipmentService.getShipmentDto(orderDetail.getShipment());
+        ShipmentDto shipmentDto = shipmentService.getDto(orderDetail.getShipment());
         orderDetailDto.setShipment(shipmentDto);
 
         return orderDetailDto;

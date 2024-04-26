@@ -2,7 +2,7 @@ package com.shop.module.product.entity;
 
 import com.shop.common.entity.BaseTimeEntity;
 import com.shop.module.cart.entity.CartProduct;
-import com.shop.module.favorite.entity.Favorite;
+import com.shop.module.wishlist.entity.Wishlist;
 import com.shop.module.order.entity.OrderDetail;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -38,7 +38,7 @@ public class ProductSize extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "productSize")
     @JsonBackReference
-    private List<Favorite> favorites = new ArrayList<>();
+    private List<Wishlist> wishlist = new ArrayList<>();
 
     @OneToMany(mappedBy = "productSize")
     @JsonBackReference

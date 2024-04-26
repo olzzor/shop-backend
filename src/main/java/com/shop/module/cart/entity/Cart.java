@@ -25,16 +25,16 @@ public class Cart extends BaseTimeEntity {
     private User user;
 
     @Column(nullable = false)
-    private boolean activateFlag;
+    private boolean isActivate;
 
     @OneToMany(mappedBy = "cart")
     private List<CartProduct> cartProducts = new ArrayList<>();
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public Cart(User user, Boolean activateFlag) {
+    public Cart(User user, Boolean isActivate) {
         this.user = user;
-        this.activateFlag = (activateFlag == null) ? true : activateFlag; // 기본값 설정
+        this.isActivate = (isActivate == null) ? true : isActivate; // 기본값 설정
     }
 
     // 설정자 메서드들
@@ -42,7 +42,7 @@ public class Cart extends BaseTimeEntity {
         this.user = user;
     }
 
-    public void setActivateFlag(boolean activateFlag) {
-        this.activateFlag = activateFlag;
+    public void setActivate(boolean isActivate) {
+        this.isActivate = isActivate;
     }
 }

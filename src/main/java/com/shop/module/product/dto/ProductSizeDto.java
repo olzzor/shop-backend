@@ -1,7 +1,7 @@
 package com.shop.module.product.dto;
 
 import com.shop.module.cart.dto.CartProductDto;
-import com.shop.module.favorite.dto.FavoriteDto;
+import com.shop.module.wishlist.dto.WishlistDto;
 import com.shop.module.order.dto.OrderDetailDto;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,7 +17,7 @@ public class ProductSizeDto {
     private ProductDto product;
     private String size;
     private int quantity;
-    private List<FavoriteDto> favorites;
+    private List<WishlistDto> wishlists;
     private List<CartProductDto> cartProducts;
     private List<OrderDetailDto> orderDetails; // 추가 근데 필요함?
 
@@ -46,8 +46,8 @@ public class ProductSizeDto {
         this.quantity = quantity;
     }
 
-    public void setFavorites(List<FavoriteDto> favoriteDtoList) {
-        this.favorites = favoriteDtoList;
+    public void setWishlists(List<WishlistDto> wishlistDtoList) {
+        this.wishlists = wishlistDtoList;
     }
 
     public void setCartProducts(List<CartProductDto> cartProductDtoList) {

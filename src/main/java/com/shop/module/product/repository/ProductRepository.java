@@ -14,7 +14,13 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
 
     Page<Product> findAllByProductImages_DisplayOrder(int displayOrder, Pageable pageable);
 
+    Page<Product> findAllByIsDisplayAndProductImages_DisplayOrder(boolean isDisplay, int displayOrder, Pageable pageable);
+
     Page<Product> findAllByStatusAndProductImages_DisplayOrder(ProductStatus status, int displayOrder, Pageable pageable);
+
+    Page<Product> findAllByIsDisplayAndCategory_CodeAndProductImages_DisplayOrder(boolean isDisplay, String categoryCode, int displayOrder, Pageable pageable);
+
+    Page<Product> findAllByIsDisplayAndCategory_CodeRefAndProductImages_DisplayOrder(boolean isDisplay, String categoryCodeRef, int displayOrder, Pageable pageable);
 
     Page<Product> findAllByCategory_CodeAndStatusAndProductImages_DisplayOrder(String categoryCode, ProductStatus status, int displayOrder, Pageable pageable);
 

@@ -2,6 +2,7 @@ package com.shop.module.order.entity;
 
 import com.shop.module.coupon.entity.Coupon;
 import com.shop.common.entity.BaseTimeEntity;
+import com.shop.module.review.entity.Review;
 import com.shop.module.shipment.entity.Shipment;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.entity.ProductSize;
@@ -57,6 +58,9 @@ public class OrderDetail extends BaseTimeEntity {
     @Column(nullable = false)
     private int finalPrice; // 주문 시점 할인 적용 후 최종 금액
 
+    @OneToOne(mappedBy = "orderDetail", fetch = FetchType.LAZY)
+    private Review review;
+
     // 빌더 패턴을 사용하는 생성자
     @Builder
     public OrderDetail(Order order, Product product, ProductSize productSize, Shipment shipment,
@@ -107,5 +111,9 @@ public class OrderDetail extends BaseTimeEntity {
 
     public void setFinalPrice(int finalPrice) {
         this.finalPrice = finalPrice;
+    }
+
+    public void setReview(Review review) {
+        this.review = review;
     }
 }

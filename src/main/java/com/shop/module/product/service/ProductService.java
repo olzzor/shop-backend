@@ -9,10 +9,12 @@ import com.shop.module.category.repository.CategoryRepository;
 import com.shop.module.product.dto.*;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.entity.ProductStatus;
+import com.shop.module.product.mapper.ProductDetailMapper;
 import com.shop.module.product.mapper.ProductImageMapper;
 import com.shop.module.product.mapper.ProductMapper;
 import com.shop.module.product.mapper.ProductSizeMapper;
 import com.shop.module.product.repository.ProductRepository;
+import com.shop.module.recommendedproduct.repository.RecommendedProductRepository;
 import io.micrometer.common.util.StringUtils;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -39,15 +42,15 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final RecommendedProductRepository recommendedProductRepository;
 
     private final ProductMapper productMapper;
     private final ProductSizeMapper productSizeMapper;
     private final ProductImageMapper productImageMapper;
+    private final ProductDetailMapper productDetailMapper;
     private final CategoryMapper categoryMapper;
 
     private static final int MAX_NAME_LENGTH = 100;
-    private static final int MAX_DETAIL_LENGTH = 2000;
-
 
     public boolean existProduct(Long id) {
         return productRepository.existsById(id);
@@ -76,16 +79,20 @@ public class ProductService {
         return productMapper.mapToDtoList(productList);
     }
 
-    public Page<Product> getProductsOnSale(Pageable pageable) {
-        return productRepository.findAllByStatusAndProductImages_DisplayOrder(ProductStatus.ON_SALE, 1, pageable);
+    public Page<Product> getProducts(Pageable pageable) {
+        return productRepository.findAllByIsDisplayAndProductImages_DisplayOrder(true, 1, pageable);
     }
 
-    public Page<Product> searchProductsOnSale(String query, Pageable pageable) {
+    public Page<Product> searchProducts(String query, Pageable pageable) {
         return productRepository.searchByKeywords(query, pageable);
     }
 
-    public Page<Product> getProductsOnSaleByCategory(String categoryCode, Pageable pageable) {
-        return productRepository.findAllByCategory_CodeAndStatusAndProductImages_DisplayOrder(categoryCode, ProductStatus.ON_SALE, 1, pageable);
+    public Page<Product> getProductsByMainCategory(String categoryCode, Pageable pageable) {
+        return productRepository.findAllByIsDisplayAndCategory_CodeRefAndProductImages_DisplayOrder(true, categoryCode, 1, pageable);
+    }
+
+    public Page<Product> getProductsBySubCategory(String categoryCode, Pageable pageable) {
+        return productRepository.findAllByIsDisplayAndCategory_CodeAndProductImages_DisplayOrder(true, categoryCode, 1, pageable);
     }
 
     public Page<Product> retrieveAllPaginated(Pageable pageable) {
@@ -139,7 +146,7 @@ public class ProductService {
         return productList.stream().map(this::getDtoWithCategoryAndSizeAndMainImage).collect(Collectors.toList());
     }
 
-    public ProductDto getDtoWithCategoryAndSizeAndImages(Product product) {
+    public ProductDto getDtoWithCategoryAndSizeAndImageAndDetail(Product product) {
         ProductDto productDto = productMapper.mapToDto(product);
 
         // 해당 상품의 카테고리 정보 취득 및 설정
@@ -154,6 +161,10 @@ public class ProductService {
         List<ProductImageDto> productImageDtoList = productImageMapper.mapToDtoList(product.getProductImages());
         productDto.setProductImages(productImageDtoList);
 
+        // 해당 상품의 상세 설명 취득 및 설정
+        ProductDetailDto productDetailDto = productDetailMapper.mapToDto(product.getProductDetail());
+        productDto.setDetail(productDetailDto);
+
         return productDto;
     }
 
@@ -161,36 +172,23 @@ public class ProductService {
         return productRepository.findByCondition(productListSearchRequest, pageable);
     }
 
+    public Page<Product> searchProductListExcludingRecommended(ProductListSearchRequest productListSearchRequest, Pageable pageable) {
+        List<Long> recommendedProductIds = recommendedProductRepository.findAllProductIds();
+
+        return productRepository.findByConditionExcludingRecommended(productListSearchRequest, recommendedProductIds, pageable);
+    }
+
+    public Page<Product> searchAllProductListExcludingRecommended(Pageable pageable) {
+        List<Long> recommendedProductIds = recommendedProductRepository.findAllProductIds();
+
+        return productRepository.findAllExcludingRecommended(recommendedProductIds, pageable);
+    }
+
     public void checkInput(ProductUpsertRequest productUpsReq) {
-
-        // categoryCode 체크
-        if (StringUtils.isBlank(productUpsReq.getCategoryCode())) {
-            throw new ValidationException("categoryCodeMissing", "카테고리를 선택해주세요.");
-        }
-
-        // name 체크
-        if (StringUtils.isBlank(productUpsReq.getName())) {
-            throw new ValidationException("nameMissing", "상품명을 입력해주세요.");
-        } else if (productUpsReq.getName().trim().length() > MAX_NAME_LENGTH) {
-            throw new ValidationException("nameTooLong", "상품명은 " + String.format("%,d", MAX_NAME_LENGTH) + "자 이하로 입력해주세요.");
-        }
-
-        // price 체크
-        if (productUpsReq.getPrice() < 1) {
-            throw new ValidationException("priceInvalid", "가격은 1 이상의 값이어야 합니다.");
-        }
-
-        // discountPer 체크
-        if (productUpsReq.getDiscountPer() < 0 || productUpsReq.getDiscountPer() >= 100) {
-            throw new ValidationException("discountPerInvalid", "할인율은 0 이상 100 미만의 값이어야 합니다.");
-        }
-
-        // detail 체크
-        if (StringUtils.isNotBlank(productUpsReq.getDetail())) {
-            if (productUpsReq.getDetail().trim().length() > MAX_DETAIL_LENGTH) {
-                throw new ValidationException("detailTooLong", "상세 설명은 " + String.format("%,d", MAX_DETAIL_LENGTH) + "자 이하로 입력해주세요.");
-            }
-        }
+        validateCategoryCode(productUpsReq.getCategoryCode());  // categoryCode 체크
+        validateName(productUpsReq.getName());                  // name 체크
+        validatePrice(productUpsReq.getPrice());                // price 체크
+        validateDiscountPer(productUpsReq.getDiscountPer());    // discountPer 체크
     }
 
     @Transactional
@@ -204,15 +202,15 @@ public class ProductService {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS"); // 년월일시분초 포맷
             sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul")); // 시간대 설정
             String formattedDate = sdf.format(new Date()); // 현재 날짜와 시간을 위의 포맷으로 변환
-            String productCode = category.getName() + "_" + userId + "_" + formattedDate;
+            String productCode = category.getCode() + "_" + userId + "_" + formattedDate;
 
             Product product = Product.builder()
                     .code(productCode)
                     .name(productUpsReq.getName())
-                    .detail(productUpsReq.getDetail())
                     .category(category)
                     .price(productUpsReq.getPrice())
                     .discountPer(productUpsReq.getDiscountPer())
+                    .isDisplay(productUpsReq.getIsDisplay())
                     .status(ProductStatus.ON_SALE)
                     .build();
 
@@ -266,6 +264,16 @@ public class ProductService {
         }
     }
 
+    @Transactional
+    public void updateProductStatus(Product product) {
+        boolean isSoldOut = product.getProductSizes().stream().allMatch(size -> size.getQuantity() == 0);
+
+        if (isSoldOut) {
+            product.setStatus(ProductStatus.OUT_OF_STOCK);
+            productRepository.save(product);
+        }
+    }
+
     /**
      * 개별 상품 정보 엔티티에 대한 상세 업데이트를 수행
      * 변경된 필드가 있을 경우에만 업데이트를 진행
@@ -277,17 +285,44 @@ public class ProductService {
     private boolean updateProductDetails(Product product, ProductUpsertRequest productUpdReq) {
         boolean isModified = false;
 
-        // 상품 이름, 설명, 가격, 할인율의 변경 사항을 검사하고 업데이트
-        isModified |= updateIfDifferent(product.getName(), productUpdReq.getName(), product::setName);
-        isModified |= updateIfDifferent(product.getDetail(), productUpdReq.getDetail(), product::setDetail);
-        isModified |= updateIfDifferent(product.getPrice(), productUpdReq.getPrice(), product::setPrice);
-        isModified |= updateIfDifferent(product.getDiscountPer(), productUpdReq.getDiscountPer(), product::setDiscountPer);
+//        // 상품 이름, 설명, 가격, 할인율의 변경 사항을 검사하고 업데이트
+//        isModified |= updateIfDifferent(product.getName(), productUpdReq.getName(), product::setName);
+//        isModified |= updateIfDifferent(product.getDetail(), productUpdReq.getDetail(), product::setDetail);
+//        isModified |= updateIfDifferent(product.getPrice(), productUpdReq.getPrice(), product::setPrice);
+//        isModified |= updateIfDifferent(product.getDiscountPer(), productUpdReq.getDiscountPer(), product::setDiscountPer);
 
-        // 상품 카테고리 변경이 있을 경우 업데이트
+        // 상품명 변경 확인 및 검증, 업데이트
+        if (!Objects.equals(product.getName(), productUpdReq.getName().trim())) {
+            validateName(productUpdReq.getName());
+            product.setName(productUpdReq.getName());
+            isModified = true;
+        }
+
+        // 상품 가격 변경 확인 및 검증, 업데이트
+        if (product.getPrice() != productUpdReq.getPrice()) {
+            validatePrice(productUpdReq.getPrice());
+            product.setPrice(productUpdReq.getPrice());
+            isModified = true;
+        }
+
+        // 상품 할인율 변경 확인 및 검증, 업데이트
+        if (product.getDiscountPer() != productUpdReq.getDiscountPer()) {
+            validateDiscountPer(productUpdReq.getDiscountPer());
+            product.setDiscountPer(productUpdReq.getDiscountPer());
+            isModified = true;
+        }
+
+        // 카테고리 변경이 있을 경우 업데이트
         Category categoryAfter = categoryRepository.findByCode(productUpdReq.getCategoryCode())
                 .orElseThrow(() -> new NotFoundException("categoryNotFound", "카테고리 정보를 찾을 수 없습니다."));
         if (!product.getCategory().equals(categoryAfter)) {
             product.setCategory(categoryAfter);
+            isModified = true;
+        }
+
+        // 상품 표시 유무 변경이 있을 경우 업데이트 20240411 추가
+        if (product.isDisplay() != productUpdReq.getIsDisplay()) {
+            product.setDisplay(productUpdReq.getIsDisplay());
             isModified = true;
         }
 
@@ -334,13 +369,41 @@ public class ProductService {
         return false; // 값이 변경되지 않았으므로 false를 반환
     }
 
-    @Transactional
-    public void updateProductStatus(Product product) {
-        boolean isSoldOut = product.getProductSizes().stream().allMatch(size -> size.getQuantity() == 0);
+    /**
+     * categoryCode 필드 검증
+     */
+    private void validateCategoryCode(String categoryCode) {
+        if (StringUtils.isBlank(categoryCode)) {
+            throw new ValidationException("categoryCodeMissing", "카테고리를 선택해주세요.");
+        }
+    }
 
-        if (isSoldOut) {
-            product.setStatus(ProductStatus.OUT_OF_STOCK);
-            productRepository.save(product);
+    /**
+     * name 필드 검증
+     */
+    private void validateName(String name) {
+        if (StringUtils.isBlank(name)) {
+            throw new ValidationException("nameMissing", "상품명을 입력해주세요.");
+        } else if (name.trim().length() > MAX_NAME_LENGTH) {
+            throw new ValidationException("nameTooLong", "상품명은 " + String.format("%,d", MAX_NAME_LENGTH) + "자 이하로 입력해주세요.");
+        }
+    }
+
+    /**
+     * price 필드 검증
+     */
+    private void validatePrice(int price) {
+        if (price < 1) {
+            throw new ValidationException("priceInvalid", "가격은 1 이상의 값이어야 합니다.");
+        }
+    }
+
+    /**
+     * discountPer 필드 검증
+     */
+    private void validateDiscountPer(int discountPer) {
+        if (discountPer < 0 || discountPer >= 100) {
+            throw new ValidationException("discountPerInvalid", "할인율은 0 이상 100 미만의 값이어야 합니다.");
         }
     }
 }

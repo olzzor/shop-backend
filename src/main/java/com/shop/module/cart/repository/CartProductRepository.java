@@ -18,8 +18,13 @@ public interface CartProductRepository extends JpaRepository<CartProduct, Long> 
 
     List<CartProduct> findAllByCart_Id(Long cartId);
 
+    List<CartProduct> findAllByCart_User_Id(Long userId);
+
     void deleteByCart_Id(Long cartId);
 
     @Query("SELECT cp.id FROM CartProduct cp WHERE cp.cart.id = :cartId AND cp.product.id = :productId")
     Long findIdByCartAndProduct(@Param("cartId") Long cartId, @Param("productId") Long productId);
+
+    @Query("SELECT cp.product FROM CartProduct cp WHERE cp.cart.user.id = :userId")
+    List<Product> findProductsByUserId(@Param("userId") Long userId);
 }

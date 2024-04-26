@@ -31,7 +31,7 @@ public class StatsSalesCategoryItemWriter implements ItemWriter<StatsSalesCatego
     public void write(Chunk<? extends StatsSalesCategory> items) throws Exception {
 
         LocalDate referenceDate = LocalDate.now().minusDays(1);
-        List<Category> allCategories = categoryService.getAll();
+        List<Category> allCategories = categoryService.retrieveAll();
 
         // 모든 카테고리를 순회
         for (Category category : allCategories) {

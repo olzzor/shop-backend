@@ -1,9 +1,11 @@
 package com.shop.module.product.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shop.module.cart.dto.CartDto;
 import com.shop.module.category.dto.CategoryDto;
 import com.shop.module.coupon.dto.CouponDto;
-import com.shop.module.favorite.dto.FavoriteDto;
+import com.shop.module.product.entity.ProductDetail;
+import com.shop.module.wishlist.dto.WishlistDto;
 import com.shop.module.order.dto.OrderDetailDto;
 import com.shop.module.product.entity.ProductStatus;
 import lombok.AccessLevel;
@@ -21,31 +23,33 @@ public class ProductDto {
     private String code;
     private CategoryDto category;
     private String name;
-    private String detail;
     private int price;
     private int discountPer;
+    @JsonProperty("isDisplay")
+    private boolean isDisplay;
     private ProductStatus status;
 
     private LocalDateTime regDate;
     private LocalDateTime modDate;
 
+    private ProductDetailDto detail;
     private List<OrderDetailDto> orderDetails;
     private List<ProductSizeDto> productSizes;
     private List<ProductImageDto> productImages;
     private List<CartDto> carts;
-    private List<FavoriteDto> favorites;
+    private List<WishlistDto> wishlists;
     private List<CouponDto> coupons;
 
     // Builder pattern constructor
     @Builder
-    public ProductDto(Long id, String code, String name, String detail, int price, int discountPer,
+    public ProductDto(Long id, String code, String name, int price, int discountPer, boolean isDisplay,
                       ProductStatus status, LocalDateTime regDate, LocalDateTime modDate) {
         this.id = id;
         this.code = code;
         this.name = name;
-        this.detail = detail;
         this.price = price;
         this.discountPer = discountPer;
+        this.isDisplay = isDisplay;
         this.status = status;
         this.regDate = regDate;
         this.modDate = modDate;
@@ -68,16 +72,16 @@ public class ProductDto {
         this.name = name;
     }
 
-    public void setDetail(String detail) {
-        this.detail = detail;
-    }
-
     public void setPrice(int price) {
         this.price = price;
     }
 
     public void setDiscountPer(int discountPer) {
         this.discountPer = discountPer;
+    }
+
+    public void setDisplay(boolean isDisplay) {
+        this.isDisplay = isDisplay;
     }
 
     public void setStatus(ProductStatus status) {
@@ -90,6 +94,10 @@ public class ProductDto {
 
     public void setModDate(LocalDateTime modDate) {
         this.modDate = modDate;
+    }
+
+    public void setDetail(ProductDetailDto productDetailDto) {
+        this.detail = productDetailDto;
     }
 
     public void setOrderDetails(List<OrderDetailDto> orderDetailDtoList) {
@@ -108,8 +116,8 @@ public class ProductDto {
         this.carts = cartDtoList;
     }
 
-    public void setFavorites(List<FavoriteDto> favoriteDtoList) {
-        this.favorites = favoriteDtoList;
+    public void setWishlists(List<WishlistDto> wishlistDtoList) {
+        this.wishlists = wishlistDtoList;
     }
 
     public void setCoupons(List<CouponDto> couponDtoList) {

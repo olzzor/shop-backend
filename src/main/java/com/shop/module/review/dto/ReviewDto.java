@@ -1,5 +1,6 @@
 package com.shop.module.review.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shop.module.order.dto.OrderDto;
 import com.shop.module.product.dto.ProductSizeDto;
 import com.shop.module.user.dto.UserDto;
@@ -20,7 +21,8 @@ public class ReviewDto {
     private byte rating;
     private String title;
     private String content;
-    private boolean activateFlag;
+    @JsonProperty("isActivate")
+    private boolean isActivate;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
     private List<ReviewImageDto> reviewImages;
@@ -30,13 +32,13 @@ public class ReviewDto {
 
     // Builder pattern constructor
     @Builder
-    public ReviewDto(Long id, byte rating, String title, String content, Boolean activateFlag,
+    public ReviewDto(Long id, byte rating, String title, String content, Boolean isActivate,
                      LocalDateTime regDate, LocalDateTime modDate) {
         this.id = id;
         this.rating = rating;
         this.title = title;
         this.content = content;
-        this.activateFlag = (activateFlag == null) ? true : activateFlag; // 기본값 설정
+        this.isActivate = (isActivate == null) ? true : isActivate; // 기본값 설정
         this.regDate = regDate;
         this.modDate = modDate;
     }
@@ -66,8 +68,8 @@ public class ReviewDto {
         this.content = content;
     }
 
-    public void setActivateFlag(boolean activateFlag) {
-        this.activateFlag = activateFlag;
+    public void setActivate(boolean isActivate) {
+        this.isActivate = isActivate;
     }
 
     public void setRegDate(LocalDateTime regDate) {

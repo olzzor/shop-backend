@@ -258,6 +258,8 @@ public class OrderController {
         }
     }
 
+    /**
+     * 20240415 주문 확정 기능 삭제
     @PostMapping("/confirm/{orderId}")
     public ResponseEntity confirmOrder(@PathVariable("orderId") Long orderId,
                                        @CookieValue(value = "token", required = false) String accessToken,
@@ -276,4 +278,5 @@ public class OrderController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
+    */
 }

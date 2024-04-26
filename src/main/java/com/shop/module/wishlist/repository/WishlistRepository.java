@@ -1,6 +1,6 @@
-package com.shop.module.favorite.repository;
+package com.shop.module.wishlist.repository;
 
-import com.shop.module.favorite.entity.Favorite;
+import com.shop.module.wishlist.entity.Wishlist;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.entity.ProductSize;
 import com.shop.module.user.entity.User;
@@ -12,24 +12,24 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
+public interface WishlistRepository extends JpaRepository<Wishlist, Long> {
     boolean existsByUser_IdAndProductSize_Id(Long userId, Long productSizeId);
 
     boolean existsByUser_IdAndProduct_IdAndProductSize_Id(Long userId, Long productId, Long productSizeId);
 
     boolean existsByUserAndProductAndProductSize(User user, Product product, ProductSize productSize);
 
-    List<Favorite> findAllByUser_Id(Long userId);
+    List<Wishlist> findAllByUser_Id(Long userId);
 
-    Favorite findByUser_IdAndProduct_Id(Long userId, Long productId);
+    Wishlist findByUser_IdAndProduct_Id(Long userId, Long productId);
 
-    Optional<Favorite> findByUser_IdAndProduct_IdAndProductSize_Id(Long userId, Long productId, Long productSizeId);
+    Optional<Wishlist> findByUser_IdAndProduct_IdAndProductSize_Id(Long userId, Long productId, Long productSizeId);
 
-    Optional<Favorite> findByUser_IdAndProductSize_Id(Long userId, Long productSizeId);
+    Optional<Wishlist> findByUser_IdAndProductSize_Id(Long userId, Long productSizeId);
 
-    Optional<Favorite> findByUserAndProductAndProductSize(User user, Product product, ProductSize productSize);
+    Optional<Wishlist> findByUserAndProductAndProductSize(User user, Product product, ProductSize productSize);
 
     @Modifying
-    @Query("DELETE FROM Favorite f WHERE f.user.id = :userId")
+    @Query("DELETE FROM Wishlist f WHERE f.user.id = :userId")
     void deleteAllByUserId(@Param("userId") Long userId);
 }

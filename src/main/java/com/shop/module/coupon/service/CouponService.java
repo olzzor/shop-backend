@@ -3,6 +3,8 @@ package com.shop.module.coupon.service;
 import com.shop.common.exception.NotFoundException;
 import com.shop.common.exception.ValidationException;
 import com.shop.common.util.DateUtils;
+import com.shop.module.cart.entity.CartProduct;
+import com.shop.module.cart.repository.CartProductRepository;
 import com.shop.module.category.dto.CategoryDto;
 import com.shop.module.category.entity.Category;
 import com.shop.module.category.mapper.CategoryMapper;
@@ -11,8 +13,12 @@ import com.shop.module.coupon.dto.CouponEligibilityRequest;
 import com.shop.module.coupon.dto.CouponListSearchRequest;
 import com.shop.module.coupon.dto.CouponUpdateRequest;
 import com.shop.module.coupon.entity.Coupon;
+import com.shop.module.coupon.entity.CouponDiscountType;
+import com.shop.module.coupon.entity.CouponStatus;
+import com.shop.module.coupon.entity.CouponType;
 import com.shop.module.coupon.mapper.CouponMapper;
 import com.shop.module.coupon.repository.CouponRepository;
+import com.shop.module.notice.entity.NoticeStatus;
 import com.shop.module.product.dto.ProductDto;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.mapper.ProductMapper;
@@ -30,6 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -38,6 +45,8 @@ import java.util.stream.Collectors;
 public class CouponService {
 
     private final CouponRepository couponRepository;
+    private final CartProductRepository cartProductRepository;
+
     private final CouponMapper couponMapper;
     private final CategoryMapper categoryMapper;
     private final ProductMapper productMapper;
@@ -66,11 +75,39 @@ public class CouponService {
         return couponRepository.findByCondition(couponListSearchRequest, pageable);
     }
 
-    public List<Coupon> getCouponListAvailable(Long userId, CouponEligibilityRequest couponEligibilityRequest) {
+    public List<Coupon> getAvailableCouponList(Long userId, CouponEligibilityRequest couponEligibilityRequest) {
         Long categoryId = couponEligibilityRequest.getCategoryId();
         Long productId = couponEligibilityRequest.getProductId();
 
         return couponRepository.retrieveApplicableCoupons(userId, categoryId, productId);
+    }
+
+    public List<Coupon> getAvailableCouponListForCart(Long userId) {
+        List<Product> productList = cartProductRepository.findProductsByUserId(userId);
+
+        List<Long> categoryIds = productList.stream()
+                .map(product -> product.getCategory().getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<Long> productIds = productList.stream()
+                .map(Product::getId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        return couponRepository.findApplicableCouponsForCart(userId, categoryIds, productIds);
+    }
+
+    public Coupon getSelectedCouponForUser(Long userId) {
+        List<CartProduct> cartProductList = cartProductRepository.findAllByCart_User_Id(userId);
+
+        for (CartProduct cartProduct : cartProductList) {
+            if (cartProduct.getCoupon() != null) {
+                return cartProduct.getCoupon();
+            }
+        }
+
+        return null; // 선택된 쿠폰이 없는 경우
     }
 
     public CouponDto convertToDto(Coupon coupon) {
@@ -114,63 +151,15 @@ public class CouponService {
     }
 
     public void checkInput(CouponUpdateRequest cuReq) {
-
-        // type 체크
-        if (cuReq.getType() == null) {
-            throw new ValidationException("typeMissing", "유형을 선택해주세요.");
-        }
-
-        // code 체크
-        if (StringUtils.isBlank(cuReq.getCode())) {
-            throw new ValidationException("codeMissing", "코드를 입력해주세요.");
-        } else if (cuReq.getCode().trim().length() > MAX_CODE_LENGTH) {
-            throw new ValidationException("codeTooLong", "코드는 50자 이하로 입력해주세요.");
-        } else if (!cuReq.getCode().matches(CODE_PATTERN)) {
-            throw new ValidationException("codeInvalidFormat", "코드가 유효하지 않습니다.");
-        }
-
-        // name 체크
-        if (StringUtils.isBlank(cuReq.getName())) {
-            throw new ValidationException("nameMissing", "이름을 입력해주세요.");
-        } else if (cuReq.getName().trim().length() > MAX_NAME_LENGTH) {
-            throw new ValidationException("nameTooLong", "이름은 50자 이하로 입력해주세요.");
-        }
-
-        // detail 체크
-        if (StringUtils.isBlank(cuReq.getDetail())) {
-            throw new ValidationException("detailMissing", "설명을 입력해주세요.");
-        } else if (cuReq.getDetail().trim().length() > MAX_DETAIL_LENGTH) {
-            throw new ValidationException("nameTooLong", "설명은 2000자 이하로 입력해주세요.");
-        }
-
-        // minAmount 체크
-        if (cuReq.getMinAmount() < 0) {
-            throw new ValidationException("minAmountInvalid", "최소 금액을 올바르게 입력해주세요.");
-        }
-
-        // discountType 체크
-        if (cuReq.getDiscountType() == null) {
-            throw new ValidationException("discountTypeMissing", "할인 유형을 선택해주세요.");
-        }
-
-        // discountValue 체크
-        if (cuReq.getDiscountValue() < 0) {
-            throw new ValidationException("discountValueInvalid", "할인 금액 및 할인율을 올바르게 입력해주세요.");
-        }
-
-        // validDate 체크
-        if (StringUtils.isBlank(cuReq.getStartValidDate())) {
-            throw new ValidationException("validDateMissing", "유효 기간의 시작 날짜를 입력해주세요.");
-        } else if (StringUtils.isBlank(cuReq.getEndValidDate())) {
-            throw new ValidationException("validDateMissing", "유효 기간의 종료 날짜를 입력해주세요.");
-        } else if (LocalDate.parse(cuReq.getStartValidDate()).isAfter(LocalDate.parse(cuReq.getEndValidDate()))) {
-            throw new ValidationException("validDateInvalid", "유효 기간의 종료 날짜는 시작 날짜보다 이후여야 합니다.");
-        }
-
-        // status 체크
-        if (cuReq.getStatus() == null) {
-            throw new ValidationException("statusMissing", "쿠폰 상태를 선택해주세요.");
-        }
+        validateType(cuReq.getType());                                          // type 체크
+        validateCode(cuReq.getCode());                                          // code 체크
+        validateName(cuReq.getName());                                          // name 체크
+        validateDetail(cuReq.getDetail());                                      // detail 체크
+        validateMinAmount(cuReq.getMinAmount());                                // minAmount 체크
+        validateDiscountType(cuReq.getDiscountType());                          // discountType 체크
+        validateDiscountValue(cuReq.getDiscountValue());                        // discountValue 체크
+        validateValidDate(cuReq.getStartValidDate(), cuReq.getEndValidDate());  // validDate 체크
+        validateStatus(cuReq.getStatus());                                      // status 체크
     }
 
     @Transactional
@@ -203,31 +192,31 @@ public class CouponService {
     }
 
     @Transactional
-    public Coupon updateCoupon(CouponUpdateRequest couponUpdateRequest) {
+    public Coupon updateCoupon(CouponUpdateRequest couponUpdReq) {
         // 1. ID로 기존 쿠폰을 데이터베이스에서 조회
-        Coupon coupon = couponRepository.findById(couponUpdateRequest.getId())
+        Coupon coupon = couponRepository.findById(couponUpdReq.getId())
                 .orElseThrow(() -> new RuntimeException("Coupon not found"));
 
         // 2. 입력된 유효 기간을 문자열에서 LocalDateTime 객체로 변환
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        String strStartValidDate = couponUpdateRequest.getStartValidDate();
-        String strEndValidDate = couponUpdateRequest.getEndValidDate();
+        String strStartValidDate = couponUpdReq.getStartValidDate();
+        String strEndValidDate = couponUpdReq.getEndValidDate();
 
         LocalDateTime ldtStartValidDate = DateUtils.convertToLocalDateTime(strStartValidDate, formatter, false);
         LocalDateTime ldtEndValidDate = DateUtils.convertToLocalDateTime(strEndValidDate, formatter, true);
 
         // 3. Request 정보로 쿠폰 필드 업데이트
-        coupon.setType(couponUpdateRequest.getType());
-        coupon.setCode(couponUpdateRequest.getCode());
-        coupon.setName(couponUpdateRequest.getName());
-        coupon.setDetail(couponUpdateRequest.getDetail());
-        coupon.setMinAmount(couponUpdateRequest.getMinAmount());
-        coupon.setDiscountType(couponUpdateRequest.getDiscountType());
-        coupon.setDiscountValue(couponUpdateRequest.getDiscountValue());
+        coupon.setType(couponUpdReq.getType());
+        coupon.setCode(couponUpdReq.getCode());
+        coupon.setName(couponUpdReq.getName());
+        coupon.setDetail(couponUpdReq.getDetail());
+        coupon.setMinAmount(couponUpdReq.getMinAmount());
+        coupon.setDiscountType(couponUpdReq.getDiscountType());
+        coupon.setDiscountValue(couponUpdReq.getDiscountValue());
         coupon.setStartValidDate(ldtStartValidDate);
         coupon.setEndValidDate(ldtEndValidDate);
-        coupon.setStatus(couponUpdateRequest.getStatus());
+        coupon.setStatus(couponUpdReq.getStatus());
 
         return couponRepository.save(coupon);
     }
@@ -264,18 +253,34 @@ public class CouponService {
     private boolean updateCouponDetails(Coupon coupon, CouponDto couponDto) {
         boolean isModified = false;
 
-        // 쿠폰 코드, 이름의 변경 사항을 검사하고 업데이트
-        isModified |= updateIfDifferent(coupon.getCode(), couponDto.getCode(), coupon::setCode);
-        isModified |= updateIfDifferent(coupon.getName(), couponDto.getName(), coupon::setName);
+//        // 쿠폰 코드, 이름의 변경 사항을 검사하고 업데이트
+//        isModified |= updateIfDifferent(coupon.getCode(), couponDto.getCode(), coupon::setCode);
+//        isModified |= updateIfDifferent(coupon.getName(), couponDto.getName(), coupon::setName);
 
-        // 쿠폰 구분 변경이 있을 경우 업데이트
+        // 코드 변경 확인 및 검증, 업데이트
+        if (!Objects.equals(coupon.getCode(), couponDto.getCode().trim())) {
+            validateCode(couponDto.getCode());
+            coupon.setCode(couponDto.getCode());
+            isModified = true;
+        }
+
+        // 이름 변경 확인 및 검증, 업데이트
+        if (!Objects.equals(coupon.getName(), couponDto.getName().trim())) {
+            validateName(couponDto.getName());
+            coupon.setName(couponDto.getName());
+            isModified = true;
+        }
+
+        // 구분 변경이 있을 경우 업데이트
         if (couponDto.getType() != null && coupon.getType() != couponDto.getType()) {
+            validateType(couponDto.getType());
             coupon.setType(couponDto.getType());
             isModified = true; // 상태가 변경되었다면 수정됨으로 표시
         }
 
-        // 쿠폰 상태 변경이 있을 경우 업데이트
+        // 상태 변경이 있을 경우 업데이트
         if (couponDto.getStatus() != null && coupon.getStatus() != couponDto.getStatus()) {
+            validateStatus(couponDto.getStatus());
             coupon.setStatus(couponDto.getStatus());
             isModified = true; // 상태가 변경되었다면 수정됨으로 표시
         }
@@ -301,4 +306,160 @@ public class CouponService {
         return false; // 값이 변경되지 않았으므로 false를 반환
     }
 
+    /**
+     * type 필드 검증
+     */
+    private void validateType(CouponType type) {
+        if (type == null) {
+            throw new ValidationException("typeMissing", "유형을 선택해주세요.");
+        }
+    }
+
+    /**
+     * code 필드 검증
+     */
+    private void validateCode(String code) {
+        if (StringUtils.isBlank(code)) {
+            throw new ValidationException("codeMissing", "코드를 입력해주세요.");
+        } else if (code.trim().length() > MAX_CODE_LENGTH) {
+            throw new ValidationException("codeTooLong", "코드는 " + MAX_CODE_LENGTH + "자 이하로 입력해주세요.");
+        } else if (!code.matches(CODE_PATTERN)) {
+            throw new ValidationException("codeInvalidFormat", "코드가 유효하지 않습니다.");
+        }
+    }
+
+    /**
+     * name 필드 검증
+     */
+    private void validateName(String name) {
+        // name 체크
+        if (StringUtils.isBlank(name)) {
+            throw new ValidationException("nameMissing", "이름을 입력해주세요.");
+        } else if (name.trim().length() > MAX_NAME_LENGTH) {
+            throw new ValidationException("nameTooLong", "이름은 " + MAX_NAME_LENGTH + "자 이하로 입력해주세요.");
+        }
+    }
+
+    /**
+     * detail 필드 검증
+     */
+    private void validateDetail(String detail) {
+        if (StringUtils.isBlank(detail)) {
+            throw new ValidationException("detailMissing", "설명을 입력해주세요.");
+        } else if (detail.trim().length() > MAX_DETAIL_LENGTH) {
+            throw new ValidationException("detailTooLong", "설명은 " + String.format("%,d", MAX_DETAIL_LENGTH) + "자 이하로 입력해주세요.");
+        }
+    }
+
+    /**
+     * minAmount 필드 검증
+     */
+    private void validateMinAmount(int minAmount) {
+        if (minAmount < 0) {
+            throw new ValidationException("minAmountInvalid", "최소 금액을 올바르게 입력해주세요.");
+        }
+    }
+
+    /**
+     * discountType 필드 검증
+     */
+    private void validateDiscountType(CouponDiscountType discountType) {
+        if (discountType == null) {
+            throw new ValidationException("discountTypeMissing", "할인 유형을 선택해주세요.");
+        }
+    }
+
+    /**
+     * discountValue 필드 검증
+     */
+    private void validateDiscountValue(int discountValue) {
+        if (discountValue < 0) {
+            throw new ValidationException("discountValueInvalid", "할인 금액 및 할인율을 올바르게 입력해주세요.");
+        }
+    }
+
+    /**
+     * validDate 필드 검증
+     */
+    private void validateValidDate(String startValidDate, String endValidDate) {
+        if (StringUtils.isBlank(startValidDate)) {
+            throw new ValidationException("validDateMissing", "유효 기간의 시작 날짜를 입력해주세요.");
+        } else if (StringUtils.isBlank(endValidDate)) {
+            throw new ValidationException("validDateMissing", "유효 기간의 종료 날짜를 입력해주세요.");
+        } else if (LocalDate.parse(startValidDate).isAfter(LocalDate.parse(endValidDate))) {
+            throw new ValidationException("validDateInvalid", "유효 기간의 종료 날짜는 시작 날짜보다 이후여야 합니다.");
+        }
+    }
+
+    /**
+     * status 필드 검증
+     */
+    private void validateStatus(CouponStatus status) {
+        if (status == null) {
+            throw new ValidationException("statusMissing", "쿠폰 상태를 선택해주세요.");
+        }
+    }
+
+//    /**
+//     * status 필드 검증
+//     */
+//    private void validateStatus(NoticeStatus status) {
+//
+//        // type 체크
+//        if (cuReq.getType() == null) {
+//            throw new ValidationException("typeMissing", "유형을 선택해주세요.");
+//        }
+//
+//        // code 체크
+//        if (StringUtils.isBlank(cuReq.getCode())) {
+//            throw new ValidationException("codeMissing", "코드를 입력해주세요.");
+//        } else if (cuReq.getCode().trim().length() > MAX_CODE_LENGTH) {
+//            throw new ValidationException("codeTooLong", "코드는 50자 이하로 입력해주세요.");
+//        } else if (!cuReq.getCode().matches(CODE_PATTERN)) {
+//            throw new ValidationException("codeInvalidFormat", "코드가 유효하지 않습니다.");
+//        }
+//
+//        // name 체크
+//        if (StringUtils.isBlank(cuReq.getName())) {
+//            throw new ValidationException("nameMissing", "이름을 입력해주세요.");
+//        } else if (cuReq.getName().trim().length() > MAX_NAME_LENGTH) {
+//            throw new ValidationException("nameTooLong", "이름은 50자 이하로 입력해주세요.");
+//        }
+//
+//        // detail 체크
+//        if (StringUtils.isBlank(cuReq.getDetail())) {
+//            throw new ValidationException("detailMissing", "설명을 입력해주세요.");
+//        } else if (cuReq.getDetail().trim().length() > MAX_DETAIL_LENGTH) {
+//            throw new ValidationException("nameTooLong", "설명은 2000자 이하로 입력해주세요.");
+//        }
+//
+//        // minAmount 체크
+//        if (cuReq.getMinAmount() < 0) {
+//            throw new ValidationException("minAmountInvalid", "최소 금액을 올바르게 입력해주세요.");
+//        }
+//
+//        // discountType 체크
+//        if (cuReq.getDiscountType() == null) {
+//            throw new ValidationException("discountTypeMissing", "할인 유형을 선택해주세요.");
+//        }
+//
+//        // discountValue 체크
+//        if (cuReq.getDiscountValue() < 0) {
+//            throw new ValidationException("discountValueInvalid", "할인 금액 및 할인율을 올바르게 입력해주세요.");
+//        }
+//
+//        // validDate 체크
+//        if (StringUtils.isBlank(cuReq.getStartValidDate())) {
+//            throw new ValidationException("validDateMissing", "유효 기간의 시작 날짜를 입력해주세요.");
+//        } else if (StringUtils.isBlank(cuReq.getEndValidDate())) {
+//            throw new ValidationException("validDateMissing", "유효 기간의 종료 날짜를 입력해주세요.");
+//        } else if (LocalDate.parse(cuReq.getStartValidDate()).isAfter(LocalDate.parse(cuReq.getEndValidDate()))) {
+//            throw new ValidationException("validDateInvalid", "유효 기간의 종료 날짜는 시작 날짜보다 이후여야 합니다.");
+//        }
+//
+//        // status 체크
+//        if (cuReq.getStatus() == null) {
+//            throw new ValidationException("statusMissing", "쿠폰 상태를 선택해주세요.");
+//        }
+//    }
 }

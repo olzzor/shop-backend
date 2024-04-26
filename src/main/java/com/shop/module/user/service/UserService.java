@@ -63,7 +63,7 @@ public class UserService {
 
     public boolean isAdminRole(Long userId) {
         Optional<User> user = userRepository.findById(userId);
-        return user.map(User::isAdminFlag).orElse(false);
+        return user.map(User::isAdmin).orElse(false);
     }
 
     public boolean isLocalUser(Long userId) {
@@ -79,7 +79,7 @@ public class UserService {
         if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return LoginResponse.builder()
                     .id(user.getId())
-                    .role(user.isAdminFlag() ? "admin" : "user") // 추가
+                    .role(user.isAdmin() ? "admin" : "user") // 추가
                     .authProvider(user.getAuthProvider().getDescription()) // 추가
                     .build();
         } else {
@@ -114,7 +114,7 @@ public class UserService {
             // 장바구니 작성
             Cart cart = Cart.builder()
                     .user(user)
-                    .activateFlag(true)
+                    .isActivate(true)
                     .build();
 
             cartRepository.save(cart);
@@ -125,7 +125,7 @@ public class UserService {
 
         return LoginResponse.builder()
                 .id(user.getId())
-                .role(user.isAdminFlag() ? "admin" : "user") // 추가
+                .role(user.isAdmin() ? "admin" : "user") // 추가
                 .authProvider(user.getAuthProvider().getDescription()) // 추가
                 .build();
     }
@@ -143,7 +143,7 @@ public class UserService {
 
         return UserJoinResponse.builder()
                 .id(user.getId())
-                .role(user.isAdminFlag() ? "admin" : "user") // 추가
+                .role(user.isAdmin() ? "admin" : "user") // 추가
                 .build();
     }
 
@@ -241,7 +241,7 @@ public class UserService {
     @Transactional
     public void deactivateUser(Long id) {
         User user = retrieveById(id);
-        user.setActivateFlag(false);
+        user.setActivate(false);
         userRepository.save(user);
     }
 
@@ -280,14 +280,14 @@ public class UserService {
         isModified |= updateIfDifferent(user.getName(), userDto.getName(), user::setName);
 
         // 관리자 권한 변경이 있을 경우 업데이트
-        if (user.isAdminFlag() != userDto.isAdminFlag()) {
-            user.setAdminFlag(userDto.isAdminFlag());
+        if (user.isAdmin() != userDto.isAdmin()) {
+            user.setAdmin(userDto.isAdmin());
             isModified = true; // 상태가 변경되었다면 수정됨으로 표시
         }
 
         // 활성 상태 변경이 있을 경우 업데이트
-        if (user.isActivateFlag() != userDto.isActivateFlag()) {
-            user.setActivateFlag(userDto.isActivateFlag());
+        if (user.isActivate() != userDto.isActivate()) {
+            user.setActivate(userDto.isActivate());
             isModified = true; // 상태가 변경되었다면 수정됨으로 표시
         }
 

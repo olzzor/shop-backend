@@ -1,10 +1,10 @@
 package com.shop.module.review.entity;
 
-import com.shop.common.entity.BaseTimeEntity;
-import com.shop.module.order.entity.Order;
-import com.shop.module.user.entity.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.shop.common.entity.BaseTimeEntity;
+import com.shop.module.order.entity.OrderDetail;
+import com.shop.module.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -30,8 +30,8 @@ public class Review extends BaseTimeEntity {
     private User user;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "order_id", referencedColumnName = "id")
-    private Order order;
+    @JoinColumn(nullable = false, name = "order_detail_id", referencedColumnName = "id")
+    private OrderDetail orderDetail;
 
     @Column(nullable = false)
     private byte rating;
@@ -43,7 +43,7 @@ public class Review extends BaseTimeEntity {
     private String content;
 
     @Column(nullable = false, columnDefinition = "boolean default true")
-    private boolean activateFlag = true;
+    private boolean isActivate = true;
 
     @OneToMany(mappedBy = "review")
     @JsonBackReference
@@ -51,13 +51,13 @@ public class Review extends BaseTimeEntity {
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public Review(User user, Order order, byte rating, String title, String content, Boolean activateFlag) {
+    public Review(User user, OrderDetail orderDetail, byte rating, String title, String content, Boolean isActivate) {
         this.user = user;
-        this.order = order;
+        this.orderDetail = orderDetail;
         this.rating = rating;
         this.title = title;
         this.content = content;
-        this.activateFlag = (activateFlag == null) ? true : activateFlag; // 기본값 설정
+        this.isActivate = (isActivate == null) ? true : isActivate; // 기본값 설정
         // 관계형 필드는 생성자에서 초기화하지 않음
     }
 
@@ -66,8 +66,8 @@ public class Review extends BaseTimeEntity {
         this.user = user;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
+    public void setOrderDetail(OrderDetail orderDetail) {
+        this.orderDetail = orderDetail;
     }
 
     public void setRating(byte rating) {
@@ -82,7 +82,7 @@ public class Review extends BaseTimeEntity {
         this.content = content;
     }
 
-    public void setActivateFlag(boolean activateFlag) {
-        this.activateFlag = activateFlag;
+    public void setActivate(boolean isActivate) {
+        this.isActivate = isActivate;
     }
 }

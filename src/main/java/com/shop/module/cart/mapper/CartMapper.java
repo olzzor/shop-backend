@@ -15,7 +15,7 @@ public class CartMapper {
     public CartDto mapToDto(Cart cart) {
         return CartDto.builder()
                 .id(cart.getId())
-                .activateFlag(cart.isActivateFlag())
+                .isActivate(cart.isActivate())
                 .build();
     }
 

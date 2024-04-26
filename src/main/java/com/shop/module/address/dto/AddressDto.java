@@ -1,5 +1,6 @@
 package com.shop.module.address.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shop.module.user.dto.UserDto;
 import lombok.*;
 
@@ -15,7 +16,9 @@ public class AddressDto {
     private String city;
     private String address1;
     private String address2;
+    @JsonProperty("isApartment")
     private boolean isApartment;
+    @JsonProperty("isDefault")
     private boolean isDefault;
 
     // 빌더 패턴을 사용하는 생성자

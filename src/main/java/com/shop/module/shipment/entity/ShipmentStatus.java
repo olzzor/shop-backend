@@ -1,11 +1,11 @@
 package com.shop.module.shipment.entity;
 
 public enum ShipmentStatus {
-    ACCEPTED("주문 접수"),
-    PREPARING("배송 준비"),
-    SHIPPING("배송 중"),
-    DELIVERED("배송 완료"),
-    CANCELED("주문 취소");
+    PREPARING("발송 준비 중"),
+    PROCESSING("발송 처리 중"),
+    SHIPPED("발송 완료"),
+    DELIVERING("배달 중"),
+    DELIVERED("배달 완료");
 
     private final String description;
 

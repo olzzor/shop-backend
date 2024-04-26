@@ -36,7 +36,7 @@ public class ShipmentController {
 
         if (token != null) {
             Page<Shipment> shipmentPage = shipmentService.getShipmentList(pageable);
-            List<ShipmentDto> shipmentDtoList = shipmentService.getShipmentDtoList(shipmentPage.getContent());
+            List<ShipmentDto> shipmentDtoList = shipmentService.getDtoList(shipmentPage.getContent());
 
             ShipmentListResponse shipmentListResponse = ShipmentListResponse.builder()
                     .shipments(shipmentDtoList)
@@ -60,8 +60,8 @@ public class ShipmentController {
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
         if (token != null) {
-            Page<Shipment> shipmentPage = shipmentService.searchShipmentList(shipmentListSearchRequest, pageable);
-            List<ShipmentDto> shipmentDtoList = shipmentService.getShipmentDtoList(shipmentPage.getContent());
+            Page<Shipment> shipmentPage = shipmentService.searchAllPaginated(shipmentListSearchRequest, pageable);
+            List<ShipmentDto> shipmentDtoList = shipmentService.getDtoList(shipmentPage.getContent());
 
             ShipmentListResponse shipmentListResponse = ShipmentListResponse.builder()
                     .shipments(shipmentDtoList)
