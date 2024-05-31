@@ -6,6 +6,8 @@ import com.shop.module.category.dto.CategoryDto;
 import com.shop.module.category.entity.Category;
 import com.shop.module.category.mapper.CategoryMapper;
 import com.shop.module.category.repository.CategoryRepository;
+import com.shop.module.notice.dto.NoticeDto;
+import com.shop.module.notice.entity.Notice;
 import com.shop.module.product.dto.*;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.entity.ProductStatus;

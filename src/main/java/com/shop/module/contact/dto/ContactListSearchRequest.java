@@ -1,5 +1,6 @@
 package com.shop.module.contact.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +15,9 @@ public class ContactListSearchRequest {
     private String orderNumber;
     private String type;
     private String status;
+    @JsonProperty("isPrivate")
+    private String isPrivate;   // 추가
+    private String productName; // 추가
     private String startRegDate;
     private String endRegDate;
 
@@ -21,6 +25,7 @@ public class ContactListSearchRequest {
     @Builder
     public ContactListSearchRequest(String title, String inquirerName, String inquirerEmail,
                                     String orderNumber, String type, String status,
+                                    String isPrivate, String productName,
                                     String startRegDate, String endRegDate) {
         this.title = title;
         this.inquirerName = inquirerName;
@@ -28,6 +33,8 @@ public class ContactListSearchRequest {
         this.orderNumber = orderNumber;
         this.type = type;
         this.status = status;
+        this.isPrivate = isPrivate;
+        this.productName = productName;
         this.startRegDate = startRegDate;
         this.endRegDate = endRegDate;
     }

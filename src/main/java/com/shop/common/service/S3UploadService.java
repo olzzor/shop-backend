@@ -22,6 +22,9 @@ public class S3UploadService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
+    @Value("${cloud.aws.s3.folder}")
+    private String folder;
+
     /**
      * 파일 업로드
      * S3에 파일을 업로드하고, 업로드된 파일의 URL을 반환
@@ -33,8 +36,8 @@ public class S3UploadService {
             metadata.setContentLength(multipartFile.getSize());
             metadata.setContentType(multipartFile.getContentType());
 
-            amazonS3.putObject(bucket, fileKey, multipartFile.getInputStream(), metadata); // S3에 파일 업로드
-            return amazonS3.getUrl(bucket, fileKey).toString(); // 업로드된 파일의 URL 반환
+            amazonS3.putObject(bucket, folder + fileKey, multipartFile.getInputStream(), metadata); // S3에 파일 업로드
+            return amazonS3.getUrl(bucket, folder + fileKey).toString(); // 업로드된 파일의 URL 반환
 
         } catch (IOException e) {
             // S3에 이미 파일이 업로드 되었다면 삭제
@@ -50,7 +53,7 @@ public class S3UploadService {
      * 파일 다운로드
      */
     public ResponseEntity<UrlResource> downloadImage(String fileKey) {
-        UrlResource urlResource = new UrlResource(amazonS3.getUrl(bucket, fileKey));
+        UrlResource urlResource = new UrlResource(amazonS3.getUrl(bucket, folder + fileKey));
 
         String contentDisposition = "attachment; filename=\"" + fileKey + "\"";
 
@@ -64,6 +67,6 @@ public class S3UploadService {
      * 파일 삭제
      */
     public void deleteImage(String fileKey) {
-        amazonS3.deleteObject(bucket, fileKey);
+        amazonS3.deleteObject(bucket, folder + fileKey);
     }
 }

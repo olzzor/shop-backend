@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 @Slf4j
@@ -26,7 +27,7 @@ public class ProductDetailService {
     private final ProductDetailMapper productDetailMapper;
 
     private static final int MAX_DESCRIPTION_LENGTH = 2000;
-    private static final int MAX_SIZE_GUIDE_LENGTH = 2000;
+    private static final int MAX_CONTENT_LENGTH = 10000;
 
     public ProductDetail retrieveById(Long id) {
         return productDetailRepository.findById(id)
@@ -45,20 +46,7 @@ public class ProductDetailService {
     }
 
     public void checkInput(ProductDetailUpsertRequest productDetailUpsReq) {
-
-        // description 체크
-        if (StringUtils.isNotBlank(productDetailUpsReq.getDescription())) {
-            if (productDetailUpsReq.getDescription().trim().length() > MAX_DESCRIPTION_LENGTH) {
-                throw new ValidationException("descriptionTooLong", "제품 설명은 " + String.format("%,d", MAX_DESCRIPTION_LENGTH) + "자 이하로 입력해주세요.");
-            }
-        }
-
-        // sizeGuide 체크
-        if (StringUtils.isNotBlank(productDetailUpsReq.getSizeGuide())) {
-            if (productDetailUpsReq.getSizeGuide().trim().length() > MAX_SIZE_GUIDE_LENGTH) {
-                throw new ValidationException("sizeGuideTooLong", "사이즈 가이드는 " + String.format("%,d", MAX_SIZE_GUIDE_LENGTH) + "자 이하로 입력해주세요.");
-            }
-        }
+        validateDescription(productDetailUpsReq.getDescription());  // description 체크
     }
 
     @Transactional
@@ -67,10 +55,33 @@ public class ProductDetailService {
         ProductDetail productDetail = ProductDetail.builder()
                 .product(product) // 연관된 Product의 ID 설정
                 .description(productDetailInsReq.getDescription()) // 제품 설명 설정
-                .sizeGuide(productDetailInsReq.getSizeGuide()) // 사이즈 가이드 설정
+                .content(productDetailInsReq.getContent()) // 사이즈 가이드 설정
                 .build();
 
         return productDetailRepository.save(productDetail);
+    }
+
+    /**
+     * 주어진 상품 상세 내용에 대해 업데이트를 수행
+     * 변경이 감지된 경우에만 데이터베이스에 저장
+     *
+     * @param productDetail    업데이트할 공지 정보 엔티티
+     * @param productDetailDto 업데이트에 사용될 DTO
+     */
+    @Transactional
+    public void updateProductDetailContent(ProductDetail productDetail, ProductDetailDto productDetailDto) {
+        boolean isModified = false;
+
+        if (!Objects.equals(productDetail.getContent(), productDetailDto.getContent().trim())) {
+            validateContent(productDetailDto.getContent());
+            productDetail.setContent(productDetailDto.getContent());
+            isModified = true;
+        }
+
+        // 변경 사항을 감지하여 엔티티를 저장
+        if (isModified) {
+            productDetailRepository.save(productDetail);
+        }
     }
 
     /**
@@ -105,7 +116,7 @@ public class ProductDetailService {
 
         // 제품 설명, 사이즈 가이드의 변경 사항을 검사하고 업데이트
         isModified |= updateIfDifferent(productDetail.getDescription(), productDetailUpdReq.getDescription(), productDetail::setDescription);
-        isModified |= updateIfDifferent(productDetail.getSizeGuide(), productDetailUpdReq.getSizeGuide(), productDetail::setSizeGuide);
+        isModified |= updateIfDifferent(productDetail.getContent(), productDetailUpdReq.getContent(), productDetail::setContent);
 
         // 변경된 사항이 있으면 true, 아니면 false를 반환
         return isModified;
@@ -126,5 +137,27 @@ public class ProductDetailService {
             return true; // 변경이 있었으므로 true를 반환
         }
         return false; // 값이 변경되지 않았으므로 false를 반환
+    }
+
+    /**
+     * description 필드 검증
+     */
+    private void validateDescription(String description) {
+        if (StringUtils.isBlank(description)) {
+            throw new ValidationException("descriptionMissing", "제품 설명을 입력해주세요.");
+        } else if (description.trim().length() > MAX_DESCRIPTION_LENGTH) {
+            throw new ValidationException("descriptionTooLong", "제품 설명은 " + String.format("%,d", MAX_DESCRIPTION_LENGTH) + "자 이하로 입력해주세요.");
+        }
+    }
+
+    /**
+     * content 필드 검증
+     */
+    private void validateContent(String content) {
+        if (StringUtils.isBlank(content)) {
+            throw new ValidationException("contentMissing", "내용을 입력해주세요.");
+        } else if (content.trim().length() > MAX_CONTENT_LENGTH) {
+            throw new ValidationException("contentTooLong", "내용은 " + String.format("%,d", MAX_CONTENT_LENGTH) + "자 이하로 입력해주세요.");
+        }
     }
 }

@@ -11,14 +11,14 @@ public class ProductDetailDto {
     private Long id;
     private ProductDto product;
     private String description;
-    private String sizeGuide;
+    private String content;
 
     // Builder pattern constructor
     @Builder
-    public ProductDetailDto(Long id, String description, String sizeGuide) {
+    public ProductDetailDto(Long id, String description, String content) {
         this.id = id;
         this.description = description;
-        this.sizeGuide = sizeGuide;
+        this.content = content;
     }
 
     // Setter methods
@@ -34,7 +34,7 @@ public class ProductDetailDto {
         this.description = description;
     }
 
-    public void setSizeGuide(String sizeGuide) {
-        this.sizeGuide = sizeGuide;
+    public void setContent(String content) {
+        this.content = content;
     }
 }

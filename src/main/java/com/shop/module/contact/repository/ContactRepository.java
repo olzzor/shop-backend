@@ -8,14 +8,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ContactRepository extends JpaRepository<Contact, Long>, ContactRepositoryCustom {
+
+    Long countByProduct_IdAndStep(Long productId, int step);
+
+    Optional<Contact> findByRefAndStep(Long ref, int step);
 
     List<Contact> findAllByRefOrderByStep(Long ref);
 
     List<Contact> findAllByUser_IdAndStepOrderByIdDesc(Long userId, int step);
 
     Page<Contact> findAllByStepOrderByRefDesc(int step, Pageable pageable);
+
+    Page<Contact> findAllByProduct_IdAndStepOrderByRefDesc(Long productId, int step, Pageable pageable);
+
+    Page<Contact> findAllByProduct_IdOrderByRefDesc(Long productId, Pageable pageable);
 
     @Query("select c.ref from Contact c where c.id = :id")
     Long findRefById(@Param("id") Long id);

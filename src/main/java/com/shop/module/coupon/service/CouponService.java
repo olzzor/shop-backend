@@ -18,7 +18,6 @@ import com.shop.module.coupon.entity.CouponStatus;
 import com.shop.module.coupon.entity.CouponType;
 import com.shop.module.coupon.mapper.CouponMapper;
 import com.shop.module.coupon.repository.CouponRepository;
-import com.shop.module.notice.entity.NoticeStatus;
 import com.shop.module.product.dto.ProductDto;
 import com.shop.module.product.entity.Product;
 import com.shop.module.product.mapper.ProductMapper;

@@ -14,8 +14,8 @@ import java.util.TimeZone;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/toast-ui")
-public class ToastUIController {
+@RequestMapping("/api/editor")
+public class EditorController {
 
     private final S3UploadService s3UploadService;
 
@@ -34,7 +34,7 @@ public class ToastUIController {
             String formattedDate = sdf.format(new Date()); // 현재 날짜와 시간을 위의 포맷으로 변환
 
             String fileName = formattedDate + extension; // 현재 날짜와 시간, 파일 확장자를 결합하여 파일 이름 생성
-            String fileKey = "notices/contents/" + fileName; // S3에 저장될 파일의 키를 'notices/contents/' 디렉토리와 생성된 파일 이름으로 결합
+            String fileKey = uploadType + "/contents/" + fileName; // S3에 저장될 파일의 키를 디렉토리와 생성된 파일 이름으로 결합
 
             Map<String, String> response = new HashMap<>();
             String s3Url = s3UploadService.saveFile(file, fileKey); // S3에 파일 업로드 및 URL 반환

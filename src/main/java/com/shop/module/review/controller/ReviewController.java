@@ -3,6 +3,7 @@ package com.shop.module.review.controller;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.shop.common.exception.UnauthorizedException;
 import com.shop.common.util.JsonUtils;
+import com.shop.common.util.StringUtils;
 import com.shop.module.product.dto.ProductDto;
 import com.shop.module.product.dto.ProductSizeDto;
 import com.shop.module.product.entity.ProductSize;
@@ -304,13 +305,9 @@ public class ReviewController {
         List<ReviewImage> reviewImageList = review.getReviewImages();
         List<ReviewImageDto> reviewImageDtoList = reviewImageService.convertToDtoList(reviewImageList);
 
-        String userEmail = review.getUser().getEmail();
-        String[] emailParts = userEmail.split("@");
-        String obfuscatedEmail = emailParts[0].charAt(0) + emailParts[0].substring(1).replaceAll(".", "*") + "@" + emailParts[1];
-
         ReviewDto reviewDto = reviewService.convertToDto(review);
         reviewDto.setReviewImages(reviewImageDtoList);
-        reviewDto.setUserEmail(obfuscatedEmail);
+        reviewDto.setUserEmail(StringUtils.obfuscatedEmail(review.getUser().getEmail()));
 
         return reviewDto;
     }
@@ -327,12 +324,8 @@ public class ReviewController {
         productSizeDto.setProduct(productDto);
         productSizeDtoList.add(productSizeDto);
 
-        String userEmail = review.getUser().getEmail();
-        String[] emailParts = userEmail.split("@");
-        String obfuscatedEmail = emailParts[0].charAt(0) + emailParts[0].substring(1).replaceAll(".", "*") + "@" + emailParts[1];
-
         ReviewDto reviewDto = reviewService.convertToDto(review);
-        reviewDto.setUserEmail(obfuscatedEmail);
+        reviewDto.setUserEmail(StringUtils.obfuscatedEmail(review.getUser().getEmail()));
         reviewDto.setReviewImages(reviewImageDtoList);
         reviewDto.setProductSizes(productSizeDtoList);
 

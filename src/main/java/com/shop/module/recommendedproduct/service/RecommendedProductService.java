@@ -51,6 +51,44 @@ public class RecommendedProductService {
         return recommendedProductRepository.findAllByOrderByDisplayOrder(pageable);
     }
 
+    // TODO 페이징 방법 수정 필요
+//    public Page<RecommendedProduct> getAllPaged(Pageable pageable) {
+
+        /**
+        int pageNumber = pageable.getPageNumber();
+        long totalProducts = recommendedProductRepository.count();
+
+        int pageSize = 4; // 페이지 당 상품 수
+        int start = (pageNumber == 0) ? 0 : 2 + 2 * (pageNumber - 1);
+
+        if (start >= totalProducts) {
+            return Page.empty(); // 시작점이 총 상품 수를 초과하는 경우 빈 페이지 반환
+        }
+
+        int fetchSize = Math.min(pageSize, (int) (totalProducts - start));
+        int actualPageNumber = start / pageSize; // 실제 페이지 번호 계산
+
+        return recommendedProductRepository.findAllByOrderByDisplayOrder(PageRequest.of(actualPageNumber, fetchSize, pageable.getSort()));
+        */
+
+        /**
+        int pageNumber = pageable.getPageNumber();
+        long totalProducts = recommendedProductRepository.count();
+        List<RecommendedProduct> rpList = new ArrayList<>();
+
+        if (pageNumber == 0) {
+            // 첫번째 페이지: 4개 상품 로드
+            return recommendedProductRepository.findAllByOrderByDisplayOrder(PageRequest.of(0, 4, pageable.getSort()));
+
+        } else {
+            // 두번째 페이지 이후: 이전 페이지의 마지막 2개 상품 + 2개 상품 추가 로드
+            int start = (pageNumber - 1) * 2 + 2;
+            int pageSize = Math.min(4, (int) (totalProducts - start)); // pageSize는 4로 고정하되, 남은 상품 수가 4보다 적을 경우 남은 상품 수만큼 로드
+            return recommendedProductRepository.findAllByOrderByDisplayOrder(PageRequest.of(pageNumber, pageSize, pageable.getSort()));
+        }
+        */
+//    }
+
     public RecommendedProductDto getDto(RecommendedProduct recommendedProduct) {
         RecommendedProductDto recommendedProductDto = recommendedProductMapper.mapToDto(recommendedProduct);
 

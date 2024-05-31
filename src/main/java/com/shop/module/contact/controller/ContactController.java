@@ -1,13 +1,13 @@
 package com.shop.module.contact.controller;
 
+import com.shop.common.exception.UnauthorizedException;
+import com.shop.common.service.SendMailService;
 import com.shop.module.contact.dto.ContactDto;
 import com.shop.module.contact.dto.ContactListResponse;
 import com.shop.module.contact.dto.ContactListSearchRequest;
 import com.shop.module.contact.entity.Contact;
 import com.shop.module.contact.service.ContactService;
-import com.shop.common.exception.UnauthorizedException;
 import com.shop.module.user.service.JwtService;
-import com.shop.common.service.SendMailService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -54,8 +54,23 @@ public class ContactController {
             throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
 
-        ContactListResponse contactListResponse = contactService.getContactList(pageable);
+        ContactListResponse contactListResponse = contactService.getAllContactList(pageable);
         return new ResponseEntity<>(contactListResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/list/{productId}")
+    public ResponseEntity getContactList(@PathVariable("productId") Long productId,
+                                         Pageable pageable) {
+
+        ContactListResponse contactListResponse = contactService.getProductContactList(pageable, productId);
+        return new ResponseEntity<>(contactListResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/answer/{contactId}")
+    public ResponseEntity getContactList(@PathVariable("contactId") Long contactId) {
+
+        String answerContent = contactService.getContactAnswerContent(contactId);
+        return new ResponseEntity<>(answerContent, HttpStatus.OK);
     }
 
     @GetMapping("/detail/{contactId}")
@@ -101,11 +116,28 @@ public class ContactController {
 
         String token = jwtService.getToken(accessToken, refreshToken, res);
 
+        contactService.checkInputInquiry(contactDto);
+        contactService.insertInquiry(token == null ? null : jwtService.getId(token), contactDto);
+
+        sendMailService.sendContactInquiryMail(contactDto);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/product-inquiry")
+    public ResponseEntity pushContactProductInquiry(@RequestBody ContactDto contactDto,
+                                                    @CookieValue(value = "token", required = false) String accessToken,
+                                                    @CookieValue(value = "refresh_token", required = false) String refreshToken,
+                                                    HttpServletResponse res) {
+
+        String token = jwtService.getToken(accessToken, refreshToken, res);
+
         if (token == null) {
-            contactService.createInquiry(null, contactDto);
-        } else {
-            contactService.createInquiry(jwtService.getId(token), contactDto);
+            throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
+
+        contactService.checkInputInquiry(contactDto);
+        contactService.insertInquiry(jwtService.getId(token), contactDto);
 
         sendMailService.sendContactInquiryMail(contactDto);
 
@@ -124,7 +156,9 @@ public class ContactController {
             throw new UnauthorizedException("tokenInvalid", "유효하지 않은 토큰입니다.");
         }
 
-        contactService.createAnswer(jwtService.getId(token), contactDto);
+        contactService.checkInputAnswer(contactDto);
+        contactService.insertAnswer(jwtService.getId(token), contactDto);
+
         sendMailService.sendContactAnswerMail(contactDto);
 
         return new ResponseEntity<>(HttpStatus.OK);

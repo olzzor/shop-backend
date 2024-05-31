@@ -3,11 +3,12 @@ package com.shop.module.product.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shop.module.cart.dto.CartDto;
 import com.shop.module.category.dto.CategoryDto;
+import com.shop.module.contact.dto.ContactDto;
+import com.shop.module.contact.entity.Contact;
 import com.shop.module.coupon.dto.CouponDto;
-import com.shop.module.product.entity.ProductDetail;
-import com.shop.module.wishlist.dto.WishlistDto;
 import com.shop.module.order.dto.OrderDetailDto;
 import com.shop.module.product.entity.ProductStatus;
+import com.shop.module.wishlist.dto.WishlistDto;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,6 +40,7 @@ public class ProductDto {
     private List<CartDto> carts;
     private List<WishlistDto> wishlists;
     private List<CouponDto> coupons;
+    private List<ContactDto> contacts; // 20240521 추가
 
     // Builder pattern constructor
     @Builder
@@ -122,5 +124,9 @@ public class ProductDto {
 
     public void setCoupons(List<CouponDto> couponDtoList) {
         this.coupons = couponDtoList;
+    }
+
+    public void setContacts(List<ContactDto> contactDtoList) {
+        this.contacts = contactDtoList;
     }
 }

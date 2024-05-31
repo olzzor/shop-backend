@@ -35,7 +35,7 @@ public class ProductImageService {
 
     private final ProductImageMapper productImageMapper;
 
-    public List<ProductImage> retrieveByProductId(Long productId) {
+    public List<ProductImage> retrieveAllByProductId(Long productId) {
         return productImageRepository.findAllByProduct_Id(productId);
     }
 
@@ -129,6 +129,77 @@ public class ProductImageService {
 
             productImageRepository.deleteAllByProduct_Id(product.getId()); // 변경 전 ProductImage 리스트를 DB에서 삭제
             productImageRepository.saveAll(productImageList); // 변경 후 ProductImage 리스트를 DB에 저장
+        }
+    }
+
+    @Transactional
+    public void addProductImages(Long userId, Product product,
+                                List<MultipartFile> files, List<ProductImageDto> existingImages) {
+
+        // 추가되어야 할 새로운 이미지를 필터
+        List<ProductImageDto> imagesToAdd = existingImages.stream()
+                .filter(ei -> ei.getId() == null)
+                .collect(Collectors.toList());
+
+        // 이미지 추가
+        List<ProductImage> productImageList = new ArrayList<>();
+
+        for (int i = 0; i < files.size(); i++) {
+
+            MultipartFile file = files.get(i);
+
+            String extension = extractFileExtension(file.getOriginalFilename()); // 원본 파일 이름에서 파일 확장자 추출
+            String fileName = createFileName(product.getCategory().getName(), userId, extension); // 저장할 파일 이름 생성
+            String fileKey = "products/" + fileName; // S3에 저장될 파일의 키를 'products/' 디렉토리와 생성된 파일 이름으로 결합
+            String s3Url = s3UploadService.saveFile(file, fileKey); // S3에 파일 업로드 및 URL 반환
+
+            ProductImage productImage = ProductImage.builder()
+                    .product(product)
+                    .fileUrl(s3Url)
+                    .fileKey(fileKey)
+                    .displayOrder(imagesToAdd.get(i).getDisplayOrder())
+                    .build();
+
+            productImageList.add(productImage);
+        }
+
+        productImageRepository.saveAll(productImageList); // 생성된 ProductImage 리스트를 DB에 저장
+    }
+
+    @Transactional
+    public void updateProductImages(List<ProductImage> currentImages, List<ProductImageDto> existingImages) {
+
+        // displayOrder 를 갱신할 이미지를 필터
+        List<ProductImageDto> productImageDtoListToUpdate = existingImages.stream()
+                .filter(ei -> ei.getId() != null)
+                .collect(Collectors.toList());
+
+        // displayOrder 를 갱신
+        for (ProductImageDto productImageDto : productImageDtoListToUpdate) {
+            ProductImage existingImage = currentImages.stream()
+                    .filter(ci -> ci.getId().equals(productImageDto.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (existingImage != null) {
+                existingImage.setDisplayOrder(productImageDto.getDisplayOrder());
+                productImageRepository.save(existingImage);
+            }
+        }
+    }
+
+    @Transactional
+    public void deleteProductImages(List<ProductImage> currentImages, List<ProductImageDto> existingImages) {
+
+        // 삭제되어야 할 이미지를 필터
+        List<ProductImage> productImageListToDelete = currentImages.stream()
+                .filter(ci -> existingImages.stream().noneMatch(ei -> ei.getId() != null && ei.getId().equals(ci.getId())))
+                .collect(Collectors.toList());
+
+        // 이미지 삭제
+        for (ProductImage productImage : productImageListToDelete) {
+            productImageRepository.delete(productImage);
+            s3UploadService.deleteImage(productImage.getFileKey());
         }
     }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.shop.common.entity.BaseTimeEntity;
 import com.shop.module.cart.entity.CartProduct;
 import com.shop.module.category.entity.Category;
+import com.shop.module.contact.entity.Contact;
 import com.shop.module.coupon.entity.CouponProduct;
 import com.shop.module.order.entity.OrderDetail;
 import com.shop.module.recentlyviewedproduct.entity.RecentlyViewedProduct;
@@ -88,6 +89,10 @@ public class Product extends BaseTimeEntity implements Serializable {
     @OneToMany(mappedBy = "product")
     @JsonBackReference
     private List<RecommendedProduct> recommendedProducts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product")
+    @JsonBackReference
+    private List<Contact> contacts = new ArrayList<>(); // 20240521 추가
 
     // 빌더 패턴을 사용하는 생성자
     @Builder

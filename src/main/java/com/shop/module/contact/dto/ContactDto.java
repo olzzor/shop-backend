@@ -1,7 +1,9 @@
 package com.shop.module.contact.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shop.module.contact.entity.ContactStatus;
 import com.shop.module.contact.entity.ContactType;
+import com.shop.module.product.dto.ProductDto;
 import com.shop.module.user.dto.UserDto;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,12 +20,15 @@ public class ContactDto {
     private String inquirerName;
     private String inquirerEmail;
     private String orderNumber;
+    private ProductDto product;
     private ContactType type;
     private String title;
     private String content;
     private ContactStatus status;
     private Long ref;
     private int step;
+    @JsonProperty("isPrivate")
+    private boolean isPrivate;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
     private int countAnswer; // 문의에 대한 답변의 개수
@@ -32,7 +37,8 @@ public class ContactDto {
     @Builder
     public ContactDto(Long id, String inquirerName, String inquirerEmail, String orderNumber,
                       ContactType type, String title, String content, ContactStatus status,
-                      Long ref, int step, LocalDateTime regDate, LocalDateTime modDate, int countAnswer) {
+                      Long ref, int step, boolean isPrivate,
+                      LocalDateTime regDate, LocalDateTime modDate, int countAnswer) {
         this.id = id;
         this.inquirerName = inquirerName;
         this.inquirerEmail = inquirerEmail;
@@ -43,6 +49,7 @@ public class ContactDto {
         this.status = status;
         this.ref = ref;
         this.step = step;
+        this.isPrivate = isPrivate;
         this.regDate = regDate;
         this.modDate = modDate;
         this.countAnswer = countAnswer;
@@ -69,6 +76,10 @@ public class ContactDto {
         this.orderNumber = orderNumber;
     }
 
+    public void setProduct(ProductDto product) {
+        this.product = product;
+    }
+
     public void setType(ContactType type) {
         this.type = type;
     }
@@ -91,6 +102,10 @@ public class ContactDto {
 
     public void setStep(int step) {
         this.step = step;
+    }
+
+    public void setPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
     }
 
     public void setRegDate(LocalDateTime regDate) {

@@ -13,7 +13,7 @@ public class ProductDetailMapper {
         return ProductDetailDto.builder()
                 .id(productDetail.getId())
                 .description(productDetail.getDescription())
-                .sizeGuide(productDetail.getSizeGuide())
+                .content(productDetail.getContent())
                 .build();
     }
 }

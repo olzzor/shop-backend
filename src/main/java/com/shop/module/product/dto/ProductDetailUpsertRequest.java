@@ -6,5 +6,5 @@ import lombok.Getter;
 public class ProductDetailUpsertRequest {
     private Long id;
     private String description;
-    private String sizeGuide;
+    private String content;
 }

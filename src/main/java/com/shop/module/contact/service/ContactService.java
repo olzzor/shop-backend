@@ -8,8 +8,13 @@ import com.shop.module.contact.dto.ContactListResponse;
 import com.shop.module.contact.dto.ContactListSearchRequest;
 import com.shop.module.contact.entity.Contact;
 import com.shop.module.contact.entity.ContactStatus;
+import com.shop.module.contact.entity.ContactType;
 import com.shop.module.contact.mapper.ContactMapper;
 import com.shop.module.contact.repository.ContactRepository;
+import com.shop.module.product.dto.ProductDto;
+import com.shop.module.product.entity.Product;
+import com.shop.module.product.mapper.ProductMapper;
+import com.shop.module.product.repository.ProductRepository;
 import com.shop.module.user.entity.User;
 import com.shop.module.user.repository.UserRepository;
 import io.micrometer.common.util.StringUtils;
@@ -30,7 +35,9 @@ public class ContactService {
 
     private final ContactRepository contactRepository;
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
     private final ContactMapper contactMapper;
+    private final ProductMapper productMapper;
 
     private static final int MAX_NAME_LENGTH = 20;
     private static final int MAX_TITLE_LENGTH = 100;
@@ -55,12 +62,18 @@ public class ContactService {
     /**
      * 문의 목록 취득
      */
-    public ContactListResponse getContactList(Pageable pageable) {
+    public ContactListResponse getAllContactList(Pageable pageable) {
         List<ContactDto> contactDtoList = new ArrayList<>();
         Page<Contact> contacts = contactRepository.findAllByStepOrderByRefDesc(0, pageable);
 
         for (Contact contact : contacts) {
             ContactDto contactDto = contactMapper.mapToDto(contact);
+
+            if (contact.getProduct() != null) {
+                ProductDto productDto = productMapper.mapToDto(contact.getProduct());
+                contactDto.setProduct(productDto);
+            }
+
             contactDto.setCountAnswer(contactRepository.countByRef(contact.getRef()) - 1);
 
             contactDtoList.add(contactDto);
@@ -72,6 +85,43 @@ public class ContactService {
                 .build();
 
         return contactListResponse;
+    }
+
+    /**
+     * 특정 상품 문의 목록 취득
+     */
+    public ContactListResponse getProductContactList(Pageable pageable, Long productId) {
+        List<ContactDto> contactDtoList = new ArrayList<>();
+        Page<Contact> contacts = contactRepository.findAllByProduct_IdAndStepOrderByRefDesc(productId, 0, pageable);
+//        Page<Contact> contacts = contactRepository.findAllByProduct_IdOrderByRefDesc(productId, pageable);
+        Long totalContacts = contactRepository.countByProduct_IdAndStep(productId, 0);
+
+        for (Contact contact : contacts) {
+            ContactDto contactDto = contactMapper.mapToDto(contact);
+
+            contactDto.setInquirerEmail(com.shop.common.util.StringUtils.obfuscatedEmail(contact.getInquirerEmail()));
+            contactDto.setCountAnswer(contactRepository.countByRef(contact.getRef()) - 1);
+
+            contactDtoList.add(contactDto);
+        }
+
+        ContactListResponse contactListResponse = ContactListResponse.builder()
+                .contacts(contactDtoList)
+                .totalPages(contacts.getTotalPages())
+                .totalContacts(totalContacts)
+                .build();
+
+        return contactListResponse;
+    }
+
+    public String getContactAnswerContent(Long contactId) {
+        Contact contactInquiry = contactRepository.findById(contactId)
+                .orElseThrow(() -> new NotFoundException("contactNotFound", "문의 정보를 찾을 수 없습니다."));
+
+        Contact contactAnswer = contactRepository.findByRefAndStep(contactInquiry.getRef(), 1)
+                .orElseThrow(() -> new NotFoundException("contactNotFound", "답변 정보를 찾을 수 없습니다."));
+
+        return contactAnswer.getContent();
     }
 
     /**
@@ -101,7 +151,14 @@ public class ContactService {
 
         for (Contact contact : contactPage.getContent()) {
             ContactDto contactDto = contactMapper.mapToDto(contact);
+
+            if (contact.getProduct() != null) {
+                ProductDto productDto = productMapper.mapToDto(contact.getProduct());
+                contactDto.setProduct(productDto);
+            }
+
             contactDto.setCountAnswer(contactRepository.countByRef(contact.getRef()) - 1);
+
             contactDtoList.add(contactDto);
         }
 
@@ -114,39 +171,23 @@ public class ContactService {
     }
 
     /**
-     * 문의 글 등록
+     * 문의 글 입력 체크
      */
-    public void createInquiry(Long userId, ContactDto contactDto) {
+    public void checkInputInquiry(ContactDto contactDto) {
 
-        if (!StringUtils.isNotBlank(contactDto.getInquirerName())) {
-            throw new ValidationException("nameMissing", "이름을 입력해주세요.");
-        } else if (contactDto.getInquirerName().trim().length() > MAX_NAME_LENGTH) {
-            throw new ValidationException("nameTooLong", String.format("이름은 %d자 이하로 입력해주세요.", MAX_NAME_LENGTH));
-        }
+        validateInquirerName(contactDto.getInquirerName());     // inquirerName 체크
+        validateInquirerEmail(contactDto.getInquirerEmail());   // inquirerEmail 체크
+        validateType(contactDto.getType());                     // type 체크
+        validateTitle(contactDto.getTitle());                   // title 체크
+        validateContent(contactDto.getContent());               // content 체크
+    }
 
-        if (!StringUtils.isNotBlank(contactDto.getInquirerEmail())) {
-            throw new ValidationException("emailMissing", "이메일를 입력해주세요.");
-        } else if (!contactDto.getInquirerEmail().trim().matches(EMAIL_PATTERN)) {
-            throw new ValidationException("emailInvalidFormat", "이메일이 유효하지 않습니다.");
-        }
+    /**
+     * 문의 글 답변 입력 체크
+     */
+    public void checkInputAnswer(ContactDto contactDto) {
 
-        if (contactDto.getType() == null) {
-            throw new ValidationException("typeMissing", "문의 사항을 선택해주세요.");
-        }
-
-        if (!StringUtils.isNotBlank(contactDto.getTitle())) {
-            throw new ValidationException("titleMissing", "제목을 입력해주세요.");
-        } else if (contactDto.getTitle().trim().length() > MAX_TITLE_LENGTH) {
-            throw new ValidationException("titleTooLong", String.format("제목은 100자 이하로 입력해주세요.", MAX_TITLE_LENGTH));
-        }
-
-        if (!StringUtils.isNotBlank(contactDto.getContent())) {
-            throw new ValidationException("contentMissing", "내용을 입력해주세요.");
-        } else if (contactDto.getContent().trim().length() > MAX_CONTENT_LENGTH) {
-            throw new ValidationException("contentTooLong", String.format("내용은 5,000자 이하로 입력해주세요.", MAX_CONTENT_LENGTH));
-        }
-
-        insertInquiry(userId, contactDto);
+        validateContent(contactDto.getContent());               // content 체크
     }
 
     /**
@@ -170,6 +211,7 @@ public class ContactService {
                 .status(ContactStatus.UNANSWERED)
                 .ref(maxRef + 1)
                 .step(0)
+                .isPrivate(contactDto.isPrivate())
                 .build();
 
         if (userId != null) {
@@ -178,23 +220,13 @@ public class ContactService {
             userOptional.ifPresent(contact::setUser);
         }
 
-        // DB 등록
-        contactRepository.save(contact);
-    }
-
-    /**
-     * 문의 글 답변 등록
-     */
-    public void createAnswer(Long userId, ContactDto contactDto) {
-        String content = contactDto.getContent();
-
-        if (!StringUtils.isNotBlank(content)) {
-            throw new ValidationException("contentMissing", "내용을 입력해주세요.");
-        } else if (content.trim().length() > MAX_CONTENT_LENGTH) {
-            throw new ValidationException("contentTooLong", "내용은 " + String.format("%,d", MAX_CONTENT_LENGTH) + "자 이하로 입력해주세요.");
+        if (contactDto.getProduct() != null && contactDto.getProduct().getId() != 0) {
+            Optional<Product> productOptional = productRepository.findById(contactDto.getProduct().getId());
+            productOptional.ifPresent(contact::setProduct);
         }
 
-        insertAnswer(userId, contactDto);
+        // DB 등록
+        contactRepository.save(contact);
     }
 
     /**
@@ -222,7 +254,12 @@ public class ContactService {
                 .status(ContactStatus.UNANSWERED)
                 .ref(originContact.getRef())
                 .step(contactRepository.findMaxStepByRef(originContact.getRef()) + 1)
+                .isPrivate(originContact.isPrivate())
                 .build();
+
+        if (originContact.getProduct() != null && originContact.getProduct().getId() != 0) {
+            contact.setProduct(originContact.getProduct());
+        }
 
         // DB 등록
         contactRepository.save(contact);
@@ -296,5 +333,58 @@ public class ContactService {
             return true; // 변경이 있었으므로 true를 반환
         }
         return false; // 값이 변경되지 않았으므로 false를 반환
+    }
+
+    /**
+     * inquirerName 필드 검증
+     */
+    private void validateInquirerName(String inquirerName) {
+        if (StringUtils.isBlank(inquirerName)) {
+            throw new ValidationException("nameMissing", "이름을 입력해주세요.");
+        } else if (inquirerName.trim().length() > MAX_NAME_LENGTH) {
+            throw new ValidationException("nameTooLong", String.format("이름은 %d자 이하로 입력해주세요.", MAX_NAME_LENGTH));
+        }
+    }
+
+    /**
+     * inquirerEmail 필드 검증
+     */
+    private void validateInquirerEmail(String inquirerEmail) {
+        if (StringUtils.isBlank(inquirerEmail)) {
+            throw new ValidationException("emailMissing", "이메일를 입력해주세요.");
+        } else if (!inquirerEmail.trim().matches(EMAIL_PATTERN)) {
+            throw new ValidationException("emailInvalidFormat", "이메일이 유효하지 않습니다.");
+        }
+    }
+
+    /**
+     * type 필드 검증
+     */
+    private void validateType(ContactType type) {
+        if (type == null) {
+            throw new ValidationException("typeMissing", "문의 사항을 선택해주세요.");
+        }
+    }
+
+    /**
+     * title 필드 검증
+     */
+    private void validateTitle(String title) {
+        if (StringUtils.isBlank(title)) {
+            throw new ValidationException("titleMissing", "제목을 입력해주세요.");
+        } else if (title.trim().length() > MAX_TITLE_LENGTH) {
+            throw new ValidationException("titleTooLong", "제목은 " + MAX_TITLE_LENGTH + "자 이하로 입력해주세요.");
+        }
+    }
+
+    /**
+     * content 필드 검증
+     */
+    private void validateContent(String content) {
+        if (StringUtils.isBlank(content)) {
+            throw new ValidationException("contentMissing", "내용을 입력해주세요.");
+        } else if (content.trim().length() > MAX_CONTENT_LENGTH) {
+            throw new ValidationException("contentTooLong", "내용은 " + String.format("%,d", MAX_CONTENT_LENGTH) + "자 이하로 입력해주세요.");
+        }
     }
 }

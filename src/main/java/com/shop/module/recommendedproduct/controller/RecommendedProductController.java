@@ -27,7 +27,6 @@ public class RecommendedProductController {
 
     @GetMapping("/get")
     public ResponseEntity<?> getForUser(Pageable pageable) {
-
         Page<RecommendedProduct> rpPage = recommendedProductService.retrieveAllPaged(pageable);
         List<RecommendedProductDto> rpDtoList = recommendedProductService.getDtoList(rpPage.getContent()); // TODO null 대응
 

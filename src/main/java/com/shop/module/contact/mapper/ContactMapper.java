@@ -24,6 +24,7 @@ public class ContactMapper {
                 .status(contact.getStatus())
                 .ref(contact.getRef())
                 .step(contact.getStep())
+                .isPrivate(contact.isPrivate())
                 .regDate(contact.getRegDate())
                 .modDate(contact.getModDate())
                 .build();

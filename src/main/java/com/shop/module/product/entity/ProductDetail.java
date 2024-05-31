@@ -21,18 +21,22 @@ public class ProductDetail extends BaseTimeEntity {
     @JoinColumn(nullable = false, name = "product_id", referencedColumnName = "id")
     private Product product;
 
-    @Column(length = 2000)
+    @Column(length = 2000) // TODO: null or not null
     private String description;
 
-    @Column(length = 2000)
-    private String sizeGuide;
+    @Column(length = 10000) // TODO: null or not null
+    private String content;
+
+//    @Column(length = 2000)
+//    private String sizeGuide;
 
     // 빌더 패턴을 사용하는 생성자
     @Builder
-    public ProductDetail(Product product, String description, String sizeGuide) {
+    public ProductDetail(Product product, String description, String content) {
         this.product = product;
         this.description = description;
-        this.sizeGuide = sizeGuide;
+        this.content = content;
+//        this.sizeGuide = sizeGuide;
     }
 
     // 설정자 메서드들
@@ -40,7 +44,7 @@ public class ProductDetail extends BaseTimeEntity {
         this.description = description;
     }
 
-    public void setSizeGuide(String sizeGuide) {
-        this.sizeGuide = sizeGuide;
+    public void setContent(String content) {
+        this.content = content;
     }
 }

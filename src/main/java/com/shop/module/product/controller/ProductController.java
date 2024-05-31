@@ -6,14 +6,15 @@ import com.shop.common.service.FileUploadService;
 import com.shop.common.util.JsonUtils;
 import com.shop.module.category.entity.Category;
 import com.shop.module.category.service.CategoryService;
+import com.shop.module.product.dto.*;
+import com.shop.module.product.entity.Product;
+import com.shop.module.product.entity.ProductImage;
 import com.shop.module.product.service.*;
+import com.shop.module.user.service.JwtService;
 import com.shop.module.wishlist.dto.WishlistDto;
 import com.shop.module.wishlist.entity.Wishlist;
 import com.shop.module.wishlist.repository.WishlistRepository;
 import com.shop.module.wishlist.service.WishlistService;
-import com.shop.module.product.dto.*;
-import com.shop.module.product.entity.Product;
-import com.shop.module.user.service.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -358,6 +359,7 @@ public class ProductController {
     public ResponseEntity<?> updateProduct(@RequestParam("product") String productJson,
                                            @RequestParam("detail") String detailJson,
                                            @RequestParam("sizes") String sizesJson,
+                                           @RequestParam("existingImages") String existingImagesJson,
                                            @RequestPart(value = "files", required = false) List<MultipartFile> files,
                                            @CookieValue(value = "token", required = false) String accessToken,
                                            @CookieValue(value = "refresh_token", required = false) String refreshToken,
@@ -377,6 +379,9 @@ public class ProductController {
                 };
                 List<ProductSizeUpsertRequest> productSizeUpsertRequestList = JsonUtils.fromJson(sizesJson, typeRef);
 
+                List<ProductImageDto> existingImages = Optional.ofNullable(JsonUtils.fromJson(existingImagesJson, new TypeReference<List<ProductImageDto>>() {
+                        })).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "입력 이미지 데이터 파싱에 실패했습니다."));
+
                 // 기존 상품 정보 취득
                 Product product = productService.retrieveById(productUpsertRequest.getId());
 
@@ -384,8 +389,23 @@ public class ProductController {
                 productDetailService.updateProductDetail(productDetailUpsertRequest);
                 // 상품 사이즈 DB 갱신
                 productSizeService.updateProductSizes(productSizeUpsertRequestList);
-                // 상품 이미지 파일의 업로드 및 DB 갱신
-                productImageService.updateProductImages(jwtService.getId(token), product, productUpsertRequest, files);
+//                // 상품 이미지 파일의 업로드 및 DB 갱신
+//                productImageService.updateProductImages(jwtService.getId(token), product, productUpsertRequest, files);
+
+                // 현재 ProductImage 리스트 취득
+                List<ProductImage> currentImages = productImageService.retrieveAllByProductId(product.getId());
+
+                // 기존 이미지 정보를 바탕으로 ProductImage 테이블 데이터 삭제
+                productImageService.deleteProductImages(currentImages, existingImages);
+
+                // 기존 이미지 정보를 바탕으로 ProductImage 테이블 데이터 갱신
+                productImageService.updateProductImages(currentImages, existingImages);
+
+                // 새로운 이미지 파일이 있다면, ProductImage 테이블에 데이터 삽입
+                if (files != null && !files.isEmpty()) {
+                    productImageService.addProductImages(jwtService.getId(token), product, files, existingImages);
+                }
+
                 // 상품 DB 갱신
                 productService.updateProduct(product, productUpsertRequest);
 
@@ -403,6 +423,7 @@ public class ProductController {
     @Transactional
     @PostMapping("/update/multiple")
     public ResponseEntity<?> updateProducts(@RequestParam("productList") String productListJson,
+                                            @RequestParam("sizesList") String sizesListJson,
                                             @CookieValue(value = "token", required = false) String accessToken,
                                             @CookieValue(value = "refresh_token", required = false) String refreshToken,
                                             HttpServletResponse res) throws IOException {
@@ -418,6 +439,14 @@ public class ProductController {
 
                 // 상품 DB 갱신
                 productService.updateProducts(productUpdReqList);
+
+                TypeReference<List<ProductSizeUpsertRequest>> trProductSizeUpsList = new TypeReference<>() {
+                };
+                List<ProductSizeUpsertRequest> productSizeUpsReqList = JsonUtils.fromJson(sizesListJson, trProductSizeUpsList);
+
+                // 상품 사이즈 DB 갱신
+                productSizeService.updateProductSizes(productSizeUpsReqList);
+
                 return ResponseEntity.ok().build();
 
             } else { // 토큰이 유효하지 않은 경우
@@ -428,6 +457,35 @@ public class ProductController {
                     .body("Update failed due to server error.");
         }
     }
+
+//    @Transactional
+//    @PostMapping("/update/multiple")
+//    public ResponseEntity<?> updateProducts(@RequestParam("productList") String productListJson,
+//                                            @CookieValue(value = "token", required = false) String accessToken,
+//                                            @CookieValue(value = "refresh_token", required = false) String refreshToken,
+//                                            HttpServletResponse res) throws IOException {
+//
+//        try {
+//            String token = jwtService.getToken(accessToken, refreshToken, res);
+//
+//            if (token != null) {
+//
+//                TypeReference<List<ProductUpsertRequest>> typeRef = new TypeReference<>() {
+//                };
+//                List<ProductUpsertRequest> productUpdReqList = JsonUtils.fromJson(productListJson, typeRef);
+//
+//                // 상품 DB 갱신
+//                productService.updateProducts(productUpdReqList);
+//                return ResponseEntity.ok().build();
+//
+//            } else { // 토큰이 유효하지 않은 경우
+//                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+//            }
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body("Update failed due to server error.");
+//        }
+//    }
 
     /**
      * 상품 조회 로그 등록
